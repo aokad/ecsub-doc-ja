@@ -1,5 +1,7 @@
 @import "fonts";
 @import "rouge-github";
+@import "customized";
+@import "alert";
 
 body {
   background-color: #fff;
@@ -39,7 +41,7 @@ a {
   text-decoration:none;
 }
 
-a:hover, a:focus {
+a:hover, a:focus, a.active {
   color:#069;
   font-weight: bold;
 }
