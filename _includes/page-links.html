@@ -1,0 +1,20 @@
+
+<ul class="page-links">
+  {% assign pages = site.pages | sort:"page_index" %}
+  {% for node in pages %}
+    {% if node.title and node.permalink and node.permalink != '/' %}
+      <li>
+        <a class="{% if node.permalink == page.url %}active{% endif %}" href={{ node.permalink || node.url }}>{{ node.title }}</a>
+        {% if node.sublinks %}
+          <ol>
+            {% for sublink in node.sublinks %}
+            <li>
+              <a href="{{node.permalink}}#{{sublink.link}}">{{sublink.title}}</a>
+            </li>
+            {% endfor %}
+          </ol>
+        {% endif %}
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>
