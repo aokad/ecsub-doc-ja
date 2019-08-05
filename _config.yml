@@ -1,2 +1,19 @@
 theme: jekyll-theme-minimal
 markdown: kramdown
+
+# Site
+title: ecsub
+description: CLI tool to run a batch jobs with ETL framework on AWS.
+
+# Meta
+author:
+    name: 'Ai Okada'
+    url: https://aokad.github.io
+github:
+    is_project_page: true
+    repository_url: https://github.com/aokad/ecsub
+    repository_name: ecsub
+    repository_nwo: github.com/aokad/ecsub
+    owner_name: aokad
+    owner_url: https://github.com/aokad
+    
