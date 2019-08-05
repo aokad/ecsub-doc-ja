@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Recipe Showcase
-permalink: /ecsub-doc-ja/showcase
+permalink: /showcase
 page_index: 2
 sublinks:
   - title: BWA alignment
