@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Getting Started
-permalink: /ecsub-doc-ja/getting-started
+permalink: /getting-started
 page_index: 0
 ---
 

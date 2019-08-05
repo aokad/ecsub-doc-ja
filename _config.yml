@@ -9,6 +9,7 @@ description: CLI tool to run a batch jobs with ETL framework on AWS.
 author:
     name: 'Ai Okada'
     url: https://aokad.github.io
+
 github:
     is_project_page: true
     repository_url: https://github.com/aokad/ecsub
