@@ -1,37 +1,54 @@
-## Welcome to GitHub Pages
+# Docsy Jekyll Theme
 
-You can use the [editor on GitHub](https://github.com/aokad/ecsub-doc-ja/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+[![CircleCI](https://circleci.com/gh/vsoch/docsy-jekyll/tree/master.svg?style=svg)](https://circleci.com/gh/vsoch/docsy-jekyll/tree/master)
+<a href="https://jekyll-themes.com/docsy-jekyll/">
+    <img src="https://img.shields.io/badge/featured%20on-JT-red.svg" height="20" alt="Jekyll Themes Shield" >
+</a>
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+![https://raw.githubusercontent.com/vsoch/docsy-jekyll/master/assets/img/docsy-jekyll.png](https://raw.githubusercontent.com/vsoch/docsy-jekyll/master/assets/img/docsy-jekyll.png)
 
-### Markdown
+This is a [starter template](https://vsoch.github.com/docsy-jekyll/) for a Docsy jekyll theme, based
+on the Beautiful [Docsy](https://github.com/google/docsy) that renders with Hugo. This version is intended for
+native deployment on GitHub pages. The original [Apache License](https://github.com/vsoch/docsy-jekyll/blob/master/LICENSE) is included.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## Changes
 
-```markdown
-Syntax highlighted code block
+The site is intended for purely documentation, so while the front page banner
+is useful for business or similar, this author (@vsoch) preferred to have
+the main site page go directly to the Documentation view. Posts
+are still provided via a feed.
 
-# Header 1
-## Header 2
-### Header 3
+## Usage
 
-- Bulleted
-- List
+### 1. Get the code
 
-1. Numbered
-2. List
+You can clone the repository right to where you want to host the docs:
 
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```bash
+git clone https://github.com/vsoch/docsy-jekyll.git docs
+cd docs
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+### 2. Customize
 
-### Jekyll Themes
+To edit configuration values, customize the [_config.yml](https://github.com/vsoch/docsy-jekyll/blob/master/_config.yml).
+To add pages, write them into the [pages](https://github.com/vsoch/docsy-jekyll/blob/master/pages) folder. 
+You define urls based on the `permalink` attribute in your pages,
+and then add them to the navigation by adding to the content of [_data/toc.myl](https://github.com/vsoch/docsy-jekyll/blob/master/_data/toc.yml).
+The top navigation is controlled by [_data/navigation.yml](https://github.com/vsoch/docsy-jekyll/blob/master/_data/navigation.yml)
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/aokad/ecsub-doc-ja/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+### 3. Options
 
-### Support or Contact
+Most of the configuration values in the [_config.yml](https://github.com/vsoch/docsy-jekyll/blob/master/_config.yml) are self explanatory,
+and for more details, see the [getting started page](https://vsoch.github.io/docsy-jekyll/docs/getting-started)
+rendered on the site.
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+### 4. Serve
+
+Depending on how you installed jekyll:
+
+```bash
+jekyll serve
+# or
+bundle exec jekyll serve
+```
