@@ -1,3 +1,8 @@
+---
+layout: default
+permalink: /
+---
+
 ## Welcome to GitHub Pages
 
 * Table Of Contents
