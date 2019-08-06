@@ -5,22 +5,7 @@ permalink: /trouble-shooting
 page_index: 4
 ---
 
-
 ## エラーかな？と思ったら
-
-### remainingResources(MEMORY)
-
-```
-[ERROR] remainingResources(MEMORY): xxx
-```
-
-メモリが足りていない
-
-```
-ecsub submit \
-(省略)
---memory 30
-```
 
 ### There is no Spot capacity
 
@@ -32,25 +17,22 @@ ecsub submit \
 時間を空けて再度挑戦するか、別のインスタンスタイプを指定してください。  
 特定のインスタンスタイプにこだわりがなければ、`--aws-ec2-instance-type-list` オプションの使用も検討してください。
 
-### instance-type xxx is not supported in ecsub
+## ジョブが失敗する
 
-```
-[ERROR] instance-type m5d.2xlarge is not supported in ecsub.
-```
+### ログを確認する
 
-指定されたインスタンスタイプは現在、ecsubで対応していません。
-別のインスタンスタイプをお試しください。
+スクリプトの不具合やタスクファイルの間違い、コンテナイメージのライブラリの不足、等々ジョブが失敗する原因は様々ですが、ログを見てみるのが一番確実です。  
+以下の手順で確認できます。
 
-対応しているインスタンスタイプは "{ecsub}/scripts.ecsub/aws_config.py" の INSTANCE_TYPE で定義されています。
+### ジョブメトリクスを確認する
 
-### Limit
+ジョブが要求しているスペックに対し、起動したインスタンスのリソースが不足していることがあります。 (特にディスク不足)   
+以下の手順で確認できます。
 
-```
-[ERROR] instance-type m5d.2xlarge is not supported in ecsub.
-```
 
-指定されたインスタンスタイプは現在、ecsubで対応していません。
-別のインスタンスタイプをお試しください。
 
-対応しているインスタンスタイプは "{ecsub}/scripts.ecsub/aws_config.py" の INSTANCE_TYPE で定義されています。
+## 制限事項
+
+ - GPU コンテナに未対応
+ - task ロールにはユーザのパーミッションを使用したい
 

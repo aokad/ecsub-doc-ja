@@ -5,9 +5,8 @@ markdown: kramdown
 title: ecsub
 description: CLI tool to run a batch jobs with ETL framework on AWS.
 
-site:
-    lang: ja-JP
-    logo: /assets/images/logo.png
+lang: ja-JP
+logo: /assets/images/logo.png
 
 # Meta
 author:
