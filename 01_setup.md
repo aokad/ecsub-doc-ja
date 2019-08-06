@@ -17,7 +17,8 @@ sublinks:
 ### 1. Dependency
 
 `ecsub` は github のリポジトリからダウンロードしてインストールすることができます。  
-`ecsub` Python で作成されており、実行するには python2.7 もしくは python3.5 以上が必要です。
+
+Python で作成されており、実行するには python2.7 もしくは python3.5 以上が必要です。  
 
 また、ecsub の実行には AWS が提供しているコマンドラインツールおよび aws アクセスのための python パッケージが必要です。
 

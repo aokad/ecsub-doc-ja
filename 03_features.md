@@ -1,31 +1,41 @@
 ---
 layout: default
-title: How to Use
-permalink: /how-to-use
-page_index: 2
+title: Features
+permalink: /features
+page_index: 4
+sublinks:
+  - title: ジョブのログを確認する
+    link: feature-log
+  - title: ジョブを途中で止めたい
+    link: feature-stop
+  - title: スポットインスタンスを使用する
+    link: feature-spot
+  - title: ジョブのコストを知るには
+    link: feature-cost
+  - title: ジョブのレポートを表示する
+    link: feature-report
+  - title: ジョブの実行ログをダウンロードする
+    link: feature-download-log
+  - title: ジョブを削除する
+    link: feature-delete
+  - title: docker in docker
+    link: feature-dind
+  - title: タスクファイルに暗号化を使う
+    link: feature-encrypt
+  - title: リクエスタ払いのバケットを使う
+    link: feature-requesta-payment
+
 ---
 
-## とりあえず実行する
+# ecsub の機能
 
-ecsub をダウンロードしたディレクトリにサンプルデータが置いてありますので、以下のコマンドで利用することができます。
-
-```
-ecsub submit \
---script ~/gitlab/ecsub-testdata/examples-iret/run-wordcount.sh \
---tasks ~/gitlab/ecsub-testdata/examples-iret/tasks-wordcount-1.tsv \
---aws-s3-bucket  s3://aokad-ana-singapore/ecsub-test \
---image python:2.7.14 \
---aws-ec2-instance-type t2.micro \
---disk-size 1
-```
-
-## 実行中のログを確認する
+## ジョブのログを確認する
 
 ```
 2018-12-18 16:49:44.473816 [tasks-wordcount-1-qyD56:000] For detail, see log-file: https://ap-northeast-1.console.aws.amazon.com/cloudwatch/home?region=ap-northeast-1#logEventViewer:group=ecsub-tasks-wordcount-1-qyD56;stream=ecsub/tasks-wordcount-1-qyD56_task/330419b5-c48a-4483-bb1a-1c14d6625a04
 ```
 
-## 途中で止めたい
+## ジョブを途中で止めたい
 
 ecsub 実行中のコンソールで Ctrl-C を入力してください。  
 その後以下のような終了処理が走りますので、そのままお待ちください。
@@ -55,7 +65,7 @@ ecsub submit \
 --spot
 ```
 
-## ジョブのコストを知りたい
+## ジョブのコストを知るには
 
 タスクごとに以下ファイルに出力されています。
 
@@ -99,7 +109,7 @@ ecsub report --wdir /tmp/ecsub -b 201901250000 --max 5
 |        1|  sample5| 000|    F| 2019/01/26 07:20:48 | 2019/01/26 07:20:48 |    x1e.xlarge|   0|      0|         1| 2019/01/26 07:20:48 | 2019/01/26 07:20:48 |                                                |
 </pre>
 
-## ジョブの実行ログを表示する
+## ジョブの実行ログをダウンロードする
 
 ecsub creates logs on AWS CloudWatch.
 If you need, you can download log-files to local directory, and remove log-streams from AWS.
@@ -152,5 +162,6 @@ ecsub delete --wdir /tmp/ecsub sample2-bRnfG
 
 ## docker in docker
 
+## タスクファイルに暗号化を使う
 
-## 
+## リクエスタ払いのバケットを使う
