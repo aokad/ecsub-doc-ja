@@ -2,3 +2,19 @@
 ---
 
 @import "jekyll-theme-minimal";
+
+.wrapper {
+    width: auto;
+}
+
+@media (max-width: 750px) {
+    section {
+      width: 100%;
+    }
+}
+@media (min-width: 750px) {
+    section {
+      width: calc(100% - 350px);
+    }
+}
+

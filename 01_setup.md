@@ -1,8 +1,8 @@
 ---
 layout: default
-title: Recipe Showcase
-permalink: /showcase
-page_index: 2
+title: Set Up
+permalink: /setup
+page_index: 1
 sublinks:
   - title: BWA alignment
     link: bwa-alignment
