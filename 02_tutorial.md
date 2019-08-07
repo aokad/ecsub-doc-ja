@@ -1,197 +1,280 @@
 ---
 layout: default
-title: How to Use
-permalink: /how-to-use
+title: Tutorial
+permalink: /tutorial
 page_index: 2
-sublinks:
-  - title: Install and Setup
-    link: install
-  - title: Getting started on AWS
-    link: getting-started-on-aws
 ---
 
-# ecsub の使用方法
+# ecsub チュートリアル
 
-# tasks ファイルの書き方
+実際のジョブを実行するまでを解説します。  
+事前に [インストール](./setup#install) を実行し動作確認を済ませておいてください。
 
+## 概要
 
-タブ区切り ("\t")
-先頭はヘッダです。
+ecsub は Amazon Elastic Container Serve (Amazon ECS) を利用したバッチジョブ実行エンジンです。  
+バッチジョブ実行の流れを以下の図に沿って解説します。  
+
+ 1. ecsub は指定されたファイルやオプションからタスク実行パラメータファイルを作成し、AWS S3 バケットにアップロードします。
+ 2. Amazon ECS にクラスタを作成し、コンテナインスタンス (EC2 インスタンス) を起動します。
+ 3. タスクを実行します。
+    * 3-1. 指定されたコンテナイメージを pull します。
+    * 3-2. タスク実行パラメータをダウンロードします。
+    * 3-3. 入力ファイルをダウンロードします。
+    * 3-4. タスクを実行します。実行ログおよびメトリクスをAWS CloudWatch にアップロードします。
+    * 3-5. タスク実行結果（出力ファイル）をアップロードします。
+ 4. 不要になったコンテナインスタンスを削除します。
+
+![](./assets/images/ecsub-flow.png)
+
+ecsub はこの一連の処理を `ecsub submit` 一つのコマンドで実行します。
+
+**どこにインストールすればいいか？**
+
+上の図ではユーザのローカルPC (Windows, Mac, Ubuntu, ...) にインストールしたものとして記載していますが、クラウド上の Linux 系サーバや AWS Cloud9 でも使用することができます。  
+少し難易度は上がりますが、AWS Lambda でも使用することができます。
+
+## ecsub コマンドの解説
+
+ecsub には以下のサブコマンドがあります。
+
+ - **submit**: ジョブを投入します。ジョブの終了を待ちます。
+ - **away**: submit と同じくジョブを投入しますが、ジョブの終了を待ちません。（上級者向け）
+ - **report**: ジョブの結果を表示します。
+ - **delete**: ジョブを削除します。
+ - **logs**: ジョブの実行ログをダウンロードします。
+
+ここではタスクの投入を行う `aws submit` について解説します。
+
+## ecsub submit コマンドの解説
+
+### 必須オプション
+
+|オプション名               |設定例              | 説明                                                        |
+|:--------------------------|:-------------------|:------------------------------------------------------------|
+|script                     | path/to/script.sh  | 実行スクリプトのパス (ローカルパスでも S3 アドレスでもよい) |
+|tasks                      | path/to/tasks.tsv  | タスクファイル（[フォーマット](#format)）のパス             |
+|aws-s3-bucket              | s3://output/bucket | s3 バケットのパス (ecsub 作業用ファイルが出力されます)      |
+|aws-ec2-instance-type      | t2.micro           | 起動したいインスタンスタイプ (*1)                           |
+|aws-ec2-instance-type-list | t3.micro,t2.micro  | 起動したいインスタンスタイプ (スポットインスタンス用) (*1)  |
+
+(*1) どちらか一つを必ず指定してください
+
+### 任意のオプション
+
+|オプション名    | デフォルト                           | 説明                                                                    |
+|:---------------|:-------------------------------------|:------------------------------------------------------------------------|
+|wdir            | ./                                   | ローカルの ecsub 作業用ディレクトリ                                     |
+|image           | python:2.7.14                        | コンテナインスタンスのイメージ                                          |
+|use_amazon_ecr  | False                                | Amazon ECR を使用するか                                                 |
+|task-name       | タスクファイル名 + "-" + 任意の5文字 | 作業用ディレクトリやコンソール出力、インスタンス名などに使用する        |
+|processes       | 20                                   | 同時実行するジョブの最大数                                              |
+|spot            | False                                | スポットインスタンスで起動するか                                        |
+|retry-od        | False                                | スポットインスタンスで失敗した場合、オンデマンドインスタンスでやり直すか|
+|ignore-location | False                                | ロケーションの違いを無視するか (*2)                                     |
+
+(*2) ロケーション（リージョン）をまたいでデータのやり取りを行うと別途料金が発生しますので、チェック機能があります。
+
+起動するAWS EC2 インスタンスに関する設定
+
+|オプション名          | デフォルト                                    | 説明                              |
+|:---------------------|:----------------------------------------------|:----------------------------------|
+|disk-size             | 22                                            | アタッチするディスクサイズ (GiB)  |
+|aws-security-group-id | (投入するVPC のデフォルトセキュリティグループ)| セキュリティグループID            |
+|aws-key-name          | (新規作成し終了時に破棄)                      | キーペア名                        |
+|aws-subnet-id         | (未指定)                                      | サブネットID                      |
+
+### 通常設定する必要のないコマンド
+
+通常変更する必要はありませんが、特殊なコンテナイメージを使用している場合などに使用します。
+
+|オプション名         | デフォルト           | 説明                                              |
+|:--------------------|:---------------------|:--------------------------------------------------|
+|dind                 | False                | Docker in Dockerとして実行するか                  |
+|request-payer-bucket | (None)               | リクエスタ払いのバケットがあれば "," 区切りで記載 |
+|shell                | /bin/bash            | コンテナイメージ上のシェルのパス                  |
+|setup-container-cmd  | "pip install awscli" | コンテナイメージジョブ実行前に行う設定コマンド    |
+
+## タスクファイルの解説
+
+タスクファイルと実行スクリプトはセットで扱います。  
+以下の図を見てください。
+
+実行スクリプトで使用したい変数をタスクファイルで設定しています。
+1 行が 1 つのジョブです。
+
+![](./assets/images/tasks1.png)
+
+タスクファイルに 3 行あれば、3 つのジョブが実行されます。
+
+![](./assets/images/tasks2.png)
+
+### 記述ルール
+
+タスクファイルは以下のルールで記載します。
+
+ - タブ区切り ("\t")
+ - 先頭はヘッダ
+ - コメントは `#` で始めて、ヘッダの前に記載
+ - ファイル名称、拡張子は任意
+
 コンテナにコピーするもの
---input [NAME]  s3 ファイルのパス, 指定ファイルのみコピー
---input-recursive [NAME] s3 ディレクトリのパス, 再帰的にコピー
+
+ - `--input [NAME]`  s3 ファイルのパス, 指定ファイルのみコピー
+ - `--input-recursive [NAME]` s3 ディレクトリのパス, 再帰的にコピー
+
 コンテナから外に出すもの
---output [NAME] s3 ファイルのパス, 指定ファイルのみコピー
---output-recursive [NAME] s3 ディレクトリのパス, 再帰的にコピー
+
+ - `--output [NAME]` s3 ファイルのパス, 指定ファイルのみコピー
+ - `--output-recursive [NAME]` s3 ディレクトリのパス, 再帰的にコピー
+
 環境変数のセット
---env [NAME] 環境変数
---secret-env [NAME] 暗号化した環境変数 (後述)
-コメントは `#` で始めて、ヘッダの前に記載してください。
 
-例 (./examples/tasks-wordcount.tsv)
+ - `--env [NAME]` 環境変数
+ - `--secret-env [NAME]` 暗号化した環境変数 (後述)
 
---env NAME	--input INPUT_FILE	--input-recursive SCRIPT	--output OUTPUT_FILE
-Hamlet	s3://ecsub-ohaio/wordcount/input/hamlet.txt	s3://ecsub-ohaio/wordcount/python	s3://ecsub-ohaio/output/hamlet-count.txt
-Kinglear	s3://ecsub-ohaio/wordcount/input/kinglear.txt	s3://ecsub-ohaio/wordcount/python	s3://ecsub-ohaio/output/kinglear-count.txt
+### 環境変数が複数ある場合
 
+環境変数が複数ある場合は、別名で設定することができます。
 
-1) ecsub_tools コマンドを使用して、秘密にしたい文字列を暗号化します。
-$ ecsub_tools encrypt password      # <--- 秘密にしたい文字列
-AQICA(省略)ZMTlAsFP4w==             # <--- 暗号化された文字列
+![](./assets/images/tasks3.png)
 
-2) 作成した文字列をフィールド名 --secret-env をつけて tasks.tsv に記入します。
+### スクリプトに直接記入してもいい？
 
---secret-env PW	--env NAME	--input INPUT_FILE	--input-recursive SCRIPT	--output OUTPUT_FILE
-AQICA(省略)ZMTlAsFP4w==	Hamlet	s3://bucket/input.txt	s3://bucket/input-dir	s3://bucket/output.txt
+可能ですが、再利用性が損なわれるため、我々はタスクファイルの使用を推奨しています。
+
+![](./assets/images/tasks4.png)
 
 
-## サンプルを実行する
+## サンプルデータを使用してバッチジョブを実行する
 
-ecsub をダウンロードしたディレクトリにサンプルデータが置いてありますので、以下のコマンドで利用することができます。
+サンプルデータを用意していますので、実際にジョブを実行してみます。
+
+### 1. サンプルデータのダウンロード
+
+まず、データセットをダウンロードします。
+
+```Bash
+git clone https://github.com/aokad/wordcount.git
+```
+
+### 2. AWS S3 に入力ファイルをアップロード
+
+解析したいデータを S3 にアップロードします。
+
+![](./assets/images/input-bucket.png)
+
+今回はダウンロードしたディレクトリのうち、 `data` ディレクトリをすべて s3 にアップロードしてください。
+
+コピーの例
+
+```Bash
+aws s3 cp --recursive ./wordcount/data s3://YOUR-BUCKET/wordcount/data
+```
+
+### 3. タスクファイルの編集
+
+./wordcount/tasks-wordcount-file.tsv をテキストエディタで開いてください。
 
 ```
+--input INPUT_FILE      --output OUTPUT_FILE    --env RANK
+s3://{bucket-name}/data/titles/hamlet.txt       s3://{bucket-name}/output/hamlet-count.txt      100
+s3://{bucket-name}/data/titles/kinglear.txt     s3://{bucket-name}/output/kinglear-count.txt    100
+s3://{bucket-name}/data/titles/othello.txt      s3://{bucket-name}/output/othello-count.txt     100
+```
+
+`{bucket-name}` の個所を実際のファイルのパスに書き換えてください。
+
+記載したパスが正しいかどうかは以下のコマンドで確認できます。
+
+```Bash
+# 正しい場合、情報が表示される
+$ aws s3 ls s3://YOUR-BUCKET/wordcount/data/titles/hamlet.txt
+2019-08-07 18:23:05     162851 hamlet.txt
+
+# 間違っている場合、何も表示されない
+$ aws s3 ls s3://YOUR-BUCKET/data/titles/hamlet.txt
+$
+```
+
+### 4. docker image を作成
+
+今回は作成済みですので割愛します。  
+参考までに、今回使用する docker image の Dockerfile は `wordcount/Dockerfile` です。
+
+### 5. 実行する
+
+以下コマンドで実行します。  
+`tasks` は編集したタスクファイルを使用してください。
+`aws-s3-bucket` は実在するバケットのパスを指定してください。
+
+```diff
 ecsub submit \
---script ~/gitlab/ecsub-testdata/examples-iret/run-wordcount.sh \
---tasks ~/gitlab/ecsub-testdata/examples-iret/tasks-wordcount-1.tsv \
---aws-s3-bucket  s3://aokad-ana-singapore/ecsub-test \
---image python:2.7.14 \
---aws-ec2-instance-type t2.micro \
---disk-size 1
++ --tasks ./wordcount/tasks-wordcount-file.tsv \
++ --aws-s3-bucket  s3://aokad-ana-singapore/ecsub-test \
+  --script ./wordcount/wordcount-file.sh \
+  --image aokad/wordcount \
+  --aws-ec2-instance-type t2.micro \
+  --disk-size 1
 ```
 
-# 
-## 実行中のログを確認する
+### 6. 実行中のログを確認する
 
-```
-2018-12-18 16:49:44.473816 [tasks-wordcount-1-qyD56:000] For detail, see log-file: https://ap-northeast-1.console.aws.amazon.com/cloudwatch/home?region=ap-northeast-1#logEventViewer:group=ecsub-tasks-wordcount-1-qyD56;stream=ecsub/tasks-wordcount-1-qyD56_task/330419b5-c48a-4483-bb1a-1c14d6625a04
-```
+実行中に以下のようなメッセージが表示されます。  
+これはタスクごとの実行ログです。
 
-## 途中で止めたい
+![](./assets/images/log.png)
 
-ecsub 実行中のコンソールで Ctrl-C を入力してください。  
-その後以下のような終了処理が走りますので、そのままお待ちください。
+記載されているアドレスをwebブラウザで開くとログが表示されます。
 
-```
-KeyboardInterrupt
-2018-12-18 16:19:49.683496 [tasks-wordcount-1-nk2Vs] + aws ec2 terminate-instances --instance-ids i-067e2dfc2a7d3809b i-01bfa1f3a4d17ac63
-2018-12-18 16:19:54.675539 [tasks-wordcount-1-nk2Vs] + aws ec2 wait instance-terminated --instance-ids i-067e2dfc2a7d3809b i-01bfa1f3a4d17ac63
-2018-12-18 16:20:45.795659 [tasks-wordcount-1-nk2Vs] + aws ec2 cancel-spot-instance-requests --spot-instance-request-ids sir-e5piabrh sir-2mvrbq6j sir-bnggbv4h
-2018-12-18 16:20:51.735453 [tasks-wordcount-1-nk2Vs] + aws ecs delete-cluster --cluster arn:aws:ecs:ap-northeast-1:047717877309:cluster/tasks-wordcount-1-nk2Vs
-2018-12-18 16:20:57.028853 [tasks-wordcount-1-nk2Vs] + aws ecs deregister-task-definition --task-definition arn:aws:ecs:ap-northeast-1:047717877309:task-definition/tasks-wordcount-1-nk2Vs:1
-2018-12-18 16:21:02.446327 [tasks-wordcount-1-nk2Vs] + aws ec2 delete-key-pair --key-name tasks-wordcount-1-nk2Vs
-```
+「すべて」でログの最後に移動できます。
 
-## スポットインスタンスを使用する
+![](./assets/images/cloudwatch-log-1.PNG)
 
-`--spot` オプションをつけて実行してください。  
-`--aws-ec2-instance-type` オプションの代わりに `--aws-ec2-instance-type-list`  オプションを使用することをお勧めします。  
+### 7. タスクのレポートを見る
 
-`--aws-ec2-instance-type-list` オプションは指定された順にインスタンスタイプを使用し、ジョブが成功するまでリトライします。  
-インスタンスのリストをカンマ区切りで優先度の高い順に記述してください。  
-
-```
-ecsub submit \
-(省略)
---aws-ec2-instance-type-list m5.2xlarge,t3.2xlarge,m4.2xlarge,t2.2xlarge \
---spot
-```
-
-## ジョブのコストを知りたい
-
-タスクごとに以下ファイルに出力されています。
-
-`/tmp/ecsub/{job}/log/summary.xxx.log`
-
-## ジョブのレポートを表示する
-
-```
-$ ecsub report --help
-usage: ecsub report [-h] [--wdir path/to/dir] [--past] [-f]
-                    [-b [YYYYMMDDhhmm]] [-e [YYYYMMDDhhmm]] [--max 20]
-                    [--sortby sort_key]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --wdir path/to/dir    {PATH} when 'ecsub submit --wdir {PATH}'
-  --past                display summary in previous version.
-  -f, --failed          display failed or abnoraml exit status job only.
-  -b [YYYYMMDDhhmm], --begin [YYYYMMDDhhmm]
-                        The earliest createdAt time for jobs to be summarized,
-                        in the format [YYYYMMDDhhmm]
-  -e [YYYYMMDDhhmm], --end [YYYYMMDDhhmm]
-                        The latest createdAt time for jobs to be summarized,
-                        in the format [YYYYMMDDhhmm]
-  --max 20              Maximum display count
-  --sortby sort_key     Sort summary key
-```
-
-For example,
+以下のコマンドでジョブの実行結果を見ることができます。
 
 ```Bash
-ecsub report --wdir /tmp/ecsub -b 201901250000 --max 5
+ecsub report
 ```
 
-<pre>
-| exitCode| taskname|  no| Spot|          job_startAt|            job_endAt| instance_type| cpu| memory| disk_size|    instance_createAt|      instance_stopAt|                                       log_local|
-|        0|  sample1| 000|    F| 2019/01/25 18:07:40 | 2019/01/25 18:13:46 |      t2.micro|   1|    900|         1| 2019/01/25 18:07:40 | 2019/01/25 18:13:46 | /tmp/ecsub/sample1/log/describe-tasks.000.0.log|
-|      255|  sample2| 000|    F| 2019/01/25 16:42:00 | 2019/01/25 16:46:33 |      t2.micro|   1|    800|         1| 2019/01/25 16:42:00 | 2019/01/25 16:46:33 | /tmp/ecsub/sample2/log/describe-tasks.000.0.log|
-|       NA|  sample3| 000|    F| 2019/01/25 17:14:58 |                     |              |    |       |         1| 2019/01/25 17:14:58 |                     |                                                |
-|        0|  sample4| 000|    F| 2019/01/25 22:06:30 | 2019/01/25 22:20:24 |    i2.8xlarge|  32| 245900|         1| 2019/01/25 22:06:30 | 2019/01/25 22:20:24 | /tmp/ecsub/sample4/log/describe-tasks.000.0.log|
-|        1|  sample5| 000|    F| 2019/01/26 07:20:48 | 2019/01/26 07:20:48 |    x1e.xlarge|   0|      0|         1| 2019/01/26 07:20:48 | 2019/01/26 07:20:48 |                                                |
-</pre>
-
-## ジョブの実行ログを表示する
-
-ecsub creates logs on AWS CloudWatch.
-If you need, you can download log-files to local directory, and remove log-streams from AWS.
+レポートが表示されます。
 
 ```
-$ ecsub logs --help
-usage: ecsub logs [-h] [--wdir path/to/dir] [--prefix task-name] [--rm] [--dw]
-
-optional arguments:
-  -h, --help          show this help message and exit
-  --wdir path/to/dir  {PATH} when 'ecsub submit --wdir {PATH}'
-  --prefix task-name  prefix of LogGroupName in AWS CloudWatch
-  --rm                flag for remove from AWS
-  --dw                flag for download from AWS
+| exit_code|                   taskname|  no| spot|          job_startAt|            job_endAt| instance_type|  cpu| memory| disk_size|   price|    instance_createAt|      instance_stopAt|                                                 log_local|
+|       127| tasks-wordcount-file-AHLXu| 000|    F| 2019/08/07 18:40:31 | 2019/08/07 18:54:20 |      t2.micro| 1024|    900|         1| 0.00469| 2019/08/07 18:40:31 | 2019/08/07 18:54:20 | ./tasks-wordcount-file-AHLXu/log/describe-tasks.000.2.log|
+|       127| tasks-wordcount-file-AHLXu| 001|    F| 2019/08/07 18:40:36 | 2019/08/07 18:57:03 |      t2.micro| 1024|    900|         1| 0.00558| 2019/08/07 18:40:36 | 2019/08/07 18:57:03 | ./tasks-wordcount-file-AHLXu/log/describe-tasks.001.2.log|
+|       127| tasks-wordcount-file-AHLXu| 002|    F| 2019/08/07 18:40:41 | 2019/08/07 18:57:23 |      t2.micro| 1024|    900|         1| 0.00567| 2019/08/07 18:40:41 | 2019/08/07 18:57:23 | ./tasks-wordcount-file-AHLXu/log/describe-tasks.002.2.log|
+|         1| tasks-wordcount-file-PsY3e| 000|    F| 2019/08/07 19:01:26 | 2019/08/07 19:06:03 |      t2.micro| 1024|    900|         1| 0.00156| 2019/08/07 19:01:26 | 2019/08/07 19:06:03 | ./tasks-wordcount-file-PsY3e/log/describe-tasks.000.0.log|
+|         1| tasks-wordcount-file-PsY3e| 001|    F| 2019/08/07 19:01:31 | 2019/08/07 19:06:31 |      t2.micro| 1024|    900|         1| 0.00170| 2019/08/07 19:01:31 | 2019/08/07 19:06:31 | ./tasks-wordcount-file-PsY3e/log/describe-tasks.001.0.log|
+|         1| tasks-wordcount-file-PsY3e| 002|    F| 2019/08/07 19:01:36 | 2019/08/07 19:06:36 |      t2.micro| 1024|    900|         1| 0.00170| 2019/08/07 19:01:36 | 2019/08/07 19:06:36 | ./tasks-wordcount-file-PsY3e/log/describe-tasks.002.0.log|
 ```
 
-For example,
+各項目
 
-```Bash
-ecsub logs --wdir /tmp/ecsub --prefix tasks-wordcount --dw
+ - **exit_code**: 終了コード。 "0" であれば成功です。
+ - **taskname**: タスク名
+ - **no**: ジョブ番号 (タスクファイルの行番号に等しい)
+ - **spot**: スポットインスタンスかどうか
+ - **job_startAt**: ジョブの開始時刻
+ - **job_endAt**: ジョブの終了時刻
+ - **instance_type**: インスタンスタイプ
+ - **cpu**: 起動したインスタンスのcpu
+ - **memory**: 起動したインスタンスのメモリ
+ - **disk_size**: アタッチしたディスクサイズ (GiB)
+ - **price**: 価格 (USD) (*1)
+ - **instance_createAt**: インスタンスの起動時刻
+ - **instance_stopAt**: インスタンスの終了時刻
+ - **log_local**: ジョブファイルのパス (*2)
+
+(*1) 価格は以下で計算しています。通信やその他サービス使用料は計算に含めていませんので、実際とは異なることがあります。
+
+```
+インスタンスの単価＊起動時間＋ディスクの単価＊サイズ＊アタッチしたインスタンスの起動時間
 ```
 
-## ジョブを削除する
-
-**Attention!** If task ends normally (exit with 0, 1, 255...), it does not need to be executed.  
-`delete` subcommand is used for jobs that have a creation date ("instance_createAt") but no end date ("instance_stopAt") as shown below.
-
-<pre>
-| exitCode| taskname|  no| ... |    instance_createAt| instance_stopAt| log_local|
-|       NA|  sample3| 000| ... | 2019/01/25 17:14:58 |                |          |
-</pre>
-
-```
-$ ecsub delete --help
-usage: ecsub delete [-h] [--wdir path/to/dir] task-name
-
-positional arguments:
-  task-name           task name
-
-optional arguments:
-  -h, --help          show this help message and exit
-  --wdir path/to/dir  {PATH} when 'ecsub submit --wdir {PATH}'
-```
-
-For example,
-
-```Bash
-ecsub delete --wdir /tmp/ecsub sample2-bRnfG
-```
-
-## docker in docker
+(*2) ジョブのログは以下も参考にしてください。
 
 
-## 
+

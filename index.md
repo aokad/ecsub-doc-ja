@@ -15,16 +15,16 @@ Amazon Elastic Compute Cloud (Amazon EC2) にインスタンスを作成して d
 
 ## セットアップ
 
---> [【AWS管理者向け】AWS セットアップ](./setup#dependency)  
+--> [【AWS管理者向け】AWS セットアップ](./setup#install)  
 --> [【ユーザ向け】インストールとユーザ設定](./setup#getting-started-on-aws)  
 
 ## ジョブを実行する
 
-コマンドラインからスクリプトファイル ([サンプル](./assets/examples/run-wordcount.sh)) とタスク定義ファイル ([サンプル](./assets/examples/tasks-wordcount.tsv)) を指定して実行します。
+コマンドラインからスクリプトファイル ([サンプル](./assets/examples/wordcount-file.sh)) とタスク定義ファイル ([サンプル](./assets/examples/wordcount-file.tsv)) を指定して実行します。
 
 デモはここから
 
-<a href="https://asciinema.org/a/jPvYTBjwnPOkLShtPega5qPvA"><img src="https://asciinema.org/a/jPvYTBjwnPOkLShtPega5qPvA.png" width="600"/></a>
+<a href="https://asciinema.org/a/xEAxjBe5CjyOck9PGBNtAfNbr"><img src="https://asciinema.org/a/xEAxjBe5CjyOck9PGBNtAfNbr.png" width="600"/></a>
 
 --> [ジョブを実行する](./how-to-use)
 
@@ -36,13 +36,11 @@ Amazon Elastic Compute Cloud (Amazon EC2) にインスタンスを作成して d
 
 ## ecsub の機能
 
-ecsub には以下の機能があります。詳細はリンク先をご確認ください。
+ecsub にはジョブ実行に関する以下の機能があります。詳細はリンク先をご確認ください。
 
- - ジョブを実行する
- - メトリクスを取得する
- - ログを確認する
- - ジョブレポートを表示する
- - ジョブを削除する
+ - [ログを確認する](./features#feature-log)
+ - [ジョブレポートを表示する](./features#feature-report)
+ - [ジョブを削除する](./features#feature-delete)
 
 ## トラブルシューティング
 

@@ -17,6 +17,17 @@ page_index: 4
 時間を空けて再度挑戦するか、別のインスタンスタイプを指定してください。  
 特定のインスタンスタイプにこだわりがなければ、`--aws-ec2-instance-type-list` オプションの使用も検討してください。
 
+### multipule regions
+
+```
+[ERROR] your task uses multipule regions 'ap-northeast-1,us-east-1'.
+```
+
+ロケーション（リージョン）をまたいでデータのやり取りを行うと別途料金が発生しますので、チェック機能が存在します。  
+了解したうえで実行する場合は `ignore-location ` オプションをつけて実行してください。
+
+チェック範囲はタスクファイル、`aws-s3-bucket` で指定されたバケット、`aws configure` で指定したデフォルトリージョンです。
+
 ## ジョブが失敗する
 
 ### ログを確認する

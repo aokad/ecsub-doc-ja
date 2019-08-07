@@ -63,7 +63,7 @@ aws configure
 ```Bash
 mkdir ecsub-example
 wget https://aokad.github.io/ecsub-doc-ja/assets/examples/run-hello.sh -P ecsub-example/
-wget https://aokad.github.io/ecsub-doc-ja/assets/examples/tasks-hello-1.tsv -P ecsub-example/
+wget https://aokad.github.io/ecsub-doc-ja/assets/examples/tasks-hello.tsv -P ecsub-example/
 ```
 
 次に AWS S3 にバケットを作成します。  
@@ -82,7 +82,7 @@ aws s3 mb s3://${yourbucket}
 ```Bash
 ecsub submit \
 --script ecsub-example/run-hello.sh \
---tasks ecsub-example/tasks-hello-1.tsv \
+--tasks ecsub-example/tasks-hello.tsv \
 --aws-s3-bucket  s3://${yourbucket}/ecsub \
 --image python:2.7.14 \
 --aws-ec2-instance-type t2.micro \
@@ -92,9 +92,9 @@ ecsub submit \
 実行できましたか？  
 "ecsub completed successfully!" と表示されていれば成功です。
 
-ecsub の実行のデモは以下 URL で見ることができます。（TODO:バージョンがちょっと古いので取り直したい）
+ecsub の実行のデモは以下 URL で見ることができます。
 
-[ecsub demo](https://asciinema.org/a/jPvYTBjwnPOkLShtPega5qPvA)
+[ecsub demo](https://asciinema.org/a/xEAxjBe5CjyOck9PGBNtAfNbr)
 
 
 ## Getting started on AWS
