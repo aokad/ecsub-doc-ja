@@ -11,12 +11,12 @@ permalink: /
 Amazon Elastic Compute Cloud (Amazon EC2) にインスタンスを作成して docker コンテナを構築しバッチジョブを実行します。  
 入出力ソースとして Amazon Simple Storage Service (Amazon S3) を使用することができます。  
 
---> [実行の仕組み](./how-it-works)
+--> [実行の仕組み](./tutorial#overview)
 
 ## セットアップ
 
---> [【AWS管理者向け】AWS セットアップ](./setup#install)  
---> [【ユーザ向け】インストールとユーザ設定](./setup#getting-started-on-aws)  
+--> [【AWS管理者向け】AWS セットアップ](./setup#getting-started-on-aws)  
+--> [【ユーザ向け】インストールとユーザ設定](./setup#install-and-setup)  
 
 ## ジョブを実行する
 
@@ -26,21 +26,13 @@ Amazon Elastic Compute Cloud (Amazon EC2) にインスタンスを作成して d
 
 <a href="https://asciinema.org/a/xEAxjBe5CjyOck9PGBNtAfNbr"><img src="https://asciinema.org/a/xEAxjBe5CjyOck9PGBNtAfNbr.png" width="600"/></a>
 
---> [ジョブを実行する](./how-to-use)
+--> [ジョブを実行する](./tutorial#%E3%83%90%E3%83%83%E3%83%81%E3%82%B8%E3%83%A7%E3%83%96%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B)
 
 ## タスクファイル
 
 ジョブを実行するにはタスクファイルと呼ばれるタブ区切り (tsv) の定義ファイルが必要です。  
 
---> [タスクファイルの書き方](./tasks-format)
-
-## ecsub の機能
-
-ecsub にはジョブ実行に関する以下の機能があります。詳細はリンク先をご確認ください。
-
- - [ログを確認する](./features#feature-log)
- - [ジョブレポートを表示する](./features#feature-report)
- - [ジョブを削除する](./features#feature-delete)
+--> [タスクファイルの書き方](./tutorial#%E3%82%BF%E3%82%B9%E3%82%AF%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E8%A7%A3%E8%AA%AC)
 
 ## トラブルシューティング
 

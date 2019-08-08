@@ -1,11 +1,35 @@
 ---
 layout: default
-title: Trouble Shooting
-permalink: /trouble-shooting
-page_index: 4
+title: Trouble shooting
+permalink: ./trouble-shooting
+page_index: 5
+sublinks:
+  - title: ジョブの投入前に失敗する
+    link: ジョブの投入前に失敗する
+  - title: ジョブが失敗する
+    link: ジョブが失敗する
 ---
 
-## エラーかな？と思ったら
+# エラーかな？と思ったら
+
+## ジョブの投入前に失敗する
+
+### FileNotFoundError
+
+```
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/tasks-wordcount-files.tsv'
+```
+
+指定したスクリプトかタスクファイルのパスが間違っています。ご確認ください。
+
+### input 'xxx' is not access
+
+```
+[ERROR] input 'aokad-ana-tokyo/wordcount/titles/hamlet.txt' is not access.
+```
+
+指定されたファイルが s3 に存在しないか、アクセス権限がありません。  
+チェック範囲はタスクファイルのうち `--input` もしくは `--input-recursive` で指定された値と `aws-s3-bucket` で指定されたバケットです。
 
 ### There is no Spot capacity
 
@@ -35,15 +59,13 @@ page_index: 4
 スクリプトの不具合やタスクファイルの間違い、コンテナイメージのライブラリの不足、等々ジョブが失敗する原因は様々ですが、ログを見てみるのが一番確実です。  
 以下の手順で確認できます。
 
+--> [実行ログ](./logs#%E5%AE%9F%E8%A1%8C%E3%83%AD%E3%82%B0)
+
 ### ジョブメトリクスを確認する
 
 ジョブが要求しているスペックに対し、起動したインスタンスのリソースが不足していることがあります。 (特にディスク不足)   
 以下の手順で確認できます。
 
+--> [メトリクス](./logs#%E3%83%A1%E3%83%88%E3%83%AA%E3%82%AF%E3%82%B9)
 
-
-## 制限事項
-
- - GPU コンテナに未対応
- - task ロールにはユーザのパーミッションを使用したい
 

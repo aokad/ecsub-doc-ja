@@ -1,11 +1,11 @@
 ---
 layout: default
 title: Getting started
-permalink: /setup
+permalink: ./setup
 page_index: 1
 sublinks:
   - title: Install and Setup
-    link: install
+    link: install-and-setup
   - title: Getting started on AWS
     link: getting-started-on-aws
 ---

@@ -1,8 +1,17 @@
 ---
 layout: default
 title: Tutorial
-permalink: /tutorial
+permalink: ./tutorial
 page_index: 2
+sublinks:
+  - title: Overview
+    link: overview
+  - title: ecsub コマンドの解説
+    link: ecsub-コマンドの解説
+  - title: タスクファイルの解説
+    link: タスクファイルの解説
+  - title: バッチジョブを実行する
+    link: バッチジョブを実行する
 ---
 
 # ecsub チュートリアル
@@ -10,10 +19,12 @@ page_index: 2
 実際のジョブを実行するまでを解説します。  
 事前に [インストール](./setup#install) を実行し動作確認を済ませておいてください。
 
-## 概要
+## Overview
 
 ecsub は Amazon Elastic Container Serve (Amazon ECS) を利用したバッチジョブ実行エンジンです。  
 バッチジョブ実行の流れを以下の図に沿って解説します。  
+
+![](./assets/images/ecsub-flow.png)
 
  1. ecsub は指定されたファイルやオプションからタスク実行パラメータファイルを作成し、AWS S3 バケットにアップロードします。
  2. Amazon ECS にクラスタを作成し、コンテナインスタンス (EC2 インスタンス) を起動します。
@@ -24,8 +35,6 @@ ecsub は Amazon Elastic Container Serve (Amazon ECS) を利用したバッチ�
     * 3-4. タスクを実行します。実行ログおよびメトリクスをAWS CloudWatch にアップロードします。
     * 3-5. タスク実行結果（出力ファイル）をアップロードします。
  4. 不要になったコンテナインスタンスを削除します。
-
-![](./assets/images/ecsub-flow.png)
 
 ecsub はこの一連の処理を `ecsub submit` 一つのコマンドで実行します。
 
@@ -141,12 +150,15 @@ ecsub には以下のサブコマンドがあります。
 
 ### スクリプトに直接記入してもいい？
 
-可能ですが、再利用性が損なわれるため、我々はタスクファイルの使用を推奨しています。
+実際はコンテナにコピーした後、実際のスクリプトには内部のパスを渡しています。  
+そのため、スクリプトに直接 S3 のパスを入力してもインスタンスにコピーされずうまく動きません。
 
 ![](./assets/images/tasks4.png)
 
+※ ツールによってはコピーせず直接 S3 のパスを入力にできるものもあります。コピー不要であれば、`--env` に設定してください。
 
-## サンプルデータを使用してバッチジョブを実行する
+
+## バッチジョブを実行する
 
 サンプルデータを用意していますので、実際にジョブを実行してみます。
 
@@ -200,23 +212,43 @@ $
 ### 4. docker image を作成
 
 今回は作成済みですので割愛します。  
-参考までに、今回使用する docker image の Dockerfile は `wordcount/Dockerfile` です。
+
+【参考】今回使用する docker image
+
+ - [dockerhub](https://cloud.docker.com/u/aokad/repository/docker/aokad/wordcount)
+ - [Dockerfile](https://raw.githubusercontent.com/aokad/wordcount/master/Dockerfile)
 
 ### 5. 実行する
 
 以下コマンドで実行します。  
-`tasks` は編集したタスクファイルを使用してください。
+`tasks` は編集したタスクファイルを使用してください。  
 `aws-s3-bucket` は実在するバケットのパスを指定してください。
 
 ```diff
 ecsub submit \
 + --tasks ./wordcount/tasks-wordcount-file.tsv \
-+ --aws-s3-bucket  s3://aokad-ana-singapore/ecsub-test \
++ --aws-s3-bucket  s3://YOUR-BUCKET/ecsub-test \
   --script ./wordcount/wordcount-file.sh \
   --image aokad/wordcount \
   --aws-ec2-instance-type t2.micro \
   --disk-size 1
 ```
+
+タスクが成功すると exit_code 0 で終了します。  
+実行中に以下のようなメッセージが表示されると、そのタスクは成功です。  
+
+![](./assets/images/success.png)
+
+失敗したときはエラーが表示されます。  
+
+![](./assets/images/failure.png)
+
+全てのタスクが成功すれば "ecsub completed successfully!" と表示されます。
+
+![](./assets/images/success2.png)
+
+うまくいかない場合は…  
+--> [エラーかな？と思ったら](./trouble-shooting)
 
 ### 6. 実行中のログを確認する
 
@@ -231,7 +263,15 @@ ecsub submit \
 
 ![](./assets/images/cloudwatch-log-1.PNG)
 
-### 7. タスクのレポートを見る
+[【参考】ログのダウンロードと AWS からの削除](./features#%E3%82%B8%E3%83%A7%E3%83%96%E3%81%AE%E5%AE%9F%E8%A1%8C%E3%83%AD%E3%82%B0%E3%82%92%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%99%E3%82%8B)
+
+### 7. タスクのコスト
+
+
+![](./assets/images/cost.png)
+
+
+### 8. タスクのレポートを見る
 
 以下のコマンドでジョブの実行結果を見ることができます。
 
@@ -243,38 +283,52 @@ ecsub report
 
 ```
 | exit_code|                   taskname|  no| spot|          job_startAt|            job_endAt| instance_type|  cpu| memory| disk_size|   price|    instance_createAt|      instance_stopAt|                                                 log_local|
-|       127| tasks-wordcount-file-AHLXu| 000|    F| 2019/08/07 18:40:31 | 2019/08/07 18:54:20 |      t2.micro| 1024|    900|         1| 0.00469| 2019/08/07 18:40:31 | 2019/08/07 18:54:20 | ./tasks-wordcount-file-AHLXu/log/describe-tasks.000.2.log|
-|       127| tasks-wordcount-file-AHLXu| 001|    F| 2019/08/07 18:40:36 | 2019/08/07 18:57:03 |      t2.micro| 1024|    900|         1| 0.00558| 2019/08/07 18:40:36 | 2019/08/07 18:57:03 | ./tasks-wordcount-file-AHLXu/log/describe-tasks.001.2.log|
-|       127| tasks-wordcount-file-AHLXu| 002|    F| 2019/08/07 18:40:41 | 2019/08/07 18:57:23 |      t2.micro| 1024|    900|         1| 0.00567| 2019/08/07 18:40:41 | 2019/08/07 18:57:23 | ./tasks-wordcount-file-AHLXu/log/describe-tasks.002.2.log|
-|         1| tasks-wordcount-file-PsY3e| 000|    F| 2019/08/07 19:01:26 | 2019/08/07 19:06:03 |      t2.micro| 1024|    900|         1| 0.00156| 2019/08/07 19:01:26 | 2019/08/07 19:06:03 | ./tasks-wordcount-file-PsY3e/log/describe-tasks.000.0.log|
-|         1| tasks-wordcount-file-PsY3e| 001|    F| 2019/08/07 19:01:31 | 2019/08/07 19:06:31 |      t2.micro| 1024|    900|         1| 0.00170| 2019/08/07 19:01:31 | 2019/08/07 19:06:31 | ./tasks-wordcount-file-PsY3e/log/describe-tasks.001.0.log|
-|         1| tasks-wordcount-file-PsY3e| 002|    F| 2019/08/07 19:01:36 | 2019/08/07 19:06:36 |      t2.micro| 1024|    900|         1| 0.00170| 2019/08/07 19:01:36 | 2019/08/07 19:06:36 | ./tasks-wordcount-file-PsY3e/log/describe-tasks.002.0.log|
+|         0| tasks-wordcount-file-QQppj| 000|    F| 2019/08/08 13:06:46 | 2019/08/08 13:11:49 |      t2.micro| 1024|    900|         1| 0.00171| 2019/08/08 13:06:46 | 2019/08/08 13:11:49 | ./tasks-wordcount-file-QQppj/log/describe-tasks.000.0.log|
+|         0| tasks-wordcount-file-QQppj| 001|    F| 2019/08/08 13:06:51 | 2019/08/08 13:11:44 |      t2.micro| 1024|    900|         1| 0.00166| 2019/08/08 13:06:51 | 2019/08/08 13:11:44 | ./tasks-wordcount-file-QQppj/log/describe-tasks.001.0.log|
+|         0| tasks-wordcount-file-QQppj| 002|    F| 2019/08/08 13:06:56 | 2019/08/08 13:11:57 |      t2.micro| 1024|    900|         1| 0.00170| 2019/08/08 13:06:56 | 2019/08/08 13:11:57 | ./tasks-wordcount-file-QQppj/log/describe-tasks.002.0.log|
 ```
 
-各項目
+成功したジョブは exit_code が 0 になっています。
 
- - **exit_code**: 終了コード。 "0" であれば成功です。
- - **taskname**: タスク名
- - **no**: ジョブ番号 (タスクファイルの行番号に等しい)
- - **spot**: スポットインスタンスかどうか
- - **job_startAt**: ジョブの開始時刻
- - **job_endAt**: ジョブの終了時刻
- - **instance_type**: インスタンスタイプ
- - **cpu**: 起動したインスタンスのcpu
- - **memory**: 起動したインスタンスのメモリ
- - **disk_size**: アタッチしたディスクサイズ (GiB)
- - **price**: 価格 (USD) (*1)
- - **instance_createAt**: インスタンスの起動時刻
- - **instance_stopAt**: インスタンスの終了時刻
- - **log_local**: ジョブファイルのパス (*2)
+詳細はこちらを参照ください。
 
-(*1) 価格は以下で計算しています。通信やその他サービス使用料は計算に含めていませんので、実際とは異なることがあります。
+--> [レポート](./logs#%E3%83%AC%E3%83%9D%E3%83%BC%E3%83%88)
+
+### 9. ディレクトリを入力にしたサンプル
+
+ここまでうまくいきましたか？  
+最後にファイル入力 (--input) ではなく、ディレクトリ入力 (--input-recursive) のサンプルを実行して終了とします。
+
+スクリプトとタスクファイルはダウンロードした `wordcount` ディレクトリにあります。
 
 ```
-インスタンスの単価＊起動時間＋ディスクの単価＊サイズ＊アタッチしたインスタンスの起動時間
+wordcount/
+├── data
+│   └── hamlet <---------------- 入力データのディレクトリ
+│      ├── hamlet_act1_scene1.txt
+│      ├── hamlet_act1_scene2.txt
+│      │     ...
+│      └── hamlet_act5_scene2.txt
+│
+├── tasks-wordcount-dir.tsv <---- ディレクトリ入力のタスクファイル
+├── tasks-wordcount-file.tsv
+├── wordcount-dir.sh <----------- ディレクトリ入力のスクリプト
+└── wordcount-file.sh
 ```
 
-(*2) ジョブのログは以下も参考にしてください。
+手順：
 
+1. 入力データをディレクトリごと S3 にアップロードします。
+1. S3 のパスに合わせてタスクファイルを編集します。
+1. 編集したタスクファイルを使用して `ecsub submit` を実行します。
 
+```diff
+ecsub submit \
++ --tasks ??? \
++ --script ??? \
++ --aws-s3-bucket  s3://YOUR-BUCKET/ecsub-test \
+  --image aokad/wordcount \
+  --aws-ec2-instance-type t2.micro \
+  --disk-size 1
+```
 
