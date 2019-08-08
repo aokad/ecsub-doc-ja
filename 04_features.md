@@ -76,11 +76,41 @@ ecsub delete --wdir /tmp/ecsub sample2-bRnfG
 
 ## タスクファイルの暗号化
 
-### 準備
+パスワードや API-KEY など、秘密にしたい値は暗号化することができます。
+
+### 準備 (AWS 管理者権限が必要です)
 
  1. AWS Key Management Service (KMS) にて、暗号化に使用するキーを作成してください。  
  1. キー名は "ecsub-" から始まる名前を付けてください。  
  1. 作成したキーに対し、使用したいユーザと ecsInstanceRole に対し、使用許可を与えてください。
+ 1. 以下内容でポリシーを新しく作成し、ecsInstanceRole に追加してください。
+
+policy/KMS_ListOnly
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "kms:DescribeKey"
+            ],
+            "Resource": "arn:aws:kms:*:*:key/*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "kms:ListKeys",
+                "kms:ListAliases"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
 
 ### 実行方法
 

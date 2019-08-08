@@ -147,7 +147,7 @@ Index   Timestamp               Maximum Unit
 1. メトリクス → ECSUB → ClusterName, InstanceId の順に移動
 1. 表示したいメトリクスを選択
 
-![](./assets/images/metrics.PNG)
+[![](./assets/images/metrics.PNG)](./assets/images/metrics.PNG)
 
 ## 実行ログ
 
@@ -155,18 +155,18 @@ Index   Timestamp               Maximum Unit
 
 タスク実行中にアドレスが表示されていますので、web ブラウザにコピペしてアクセスできます。
 
-![](./assets/images/log.PNG)
+[![](./assets/images/log.PNG)](./assets/images/log.PNG)
 
 ターミナルを閉じた後に参照したい場合は以下の手順でアクセスできます。
 
 1. AWS コンソールにログインし、cloudwatch ログに移動
 1. フィルタに「ecsub-${タスク名}」を入力
 
-![](./assets/images/log-access.PNG)
+[![](./assets/images/log-access.PNG)](./assets/images/log-access.PNG)
 
 タスク名は ecsub 作業ディレクトリのディレクトリ名であり、デフォルトではタスクファイル名 + 任意の5文字です。
 
-![](./assets/images/task-name.PNG)
+[![](./assets/images/task-name.PNG)](./assets/images/task-name.PNG)
 
 `ecsub logs` コマンドでローカルにダウンロードすることもできます。
 

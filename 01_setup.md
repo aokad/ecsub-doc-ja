@@ -17,10 +17,9 @@ sublinks:
 ### 1. Dependency
 
 `ecsub` は github のリポジトリからダウンロードしてインストールすることができます。  
+Python で作成されており、実行するには python2.7 もしくは python3.5 以上が必要です。
 
-Python で作成されており、実行するには python2.7 もしくは python3.5 以上が必要です。  
-
-また、ecsub の実行には AWS が提供しているコマンドラインツールおよび aws アクセスのための python パッケージが必要です。
+ecsub の実行には AWS が提供しているコマンドラインツールおよび aws アクセスのための python パッケージが必要です。
 
  - [awscli](https://docs.aws.amazon.com/streams/latest/dev/kinesis-tutorial-cli-installation.html)
  - [boto3](https://github.com/boto/boto3)
@@ -106,11 +105,13 @@ ecsub の実行のデモは以下 URL で見ることができます。
 以下の権限を付け、"ecsub-user" という名前でグループを作成してください。
 
  - AmazonEC2FullAccess
- - S3_S3FullAccess (It is better to limit "Resource:")
  - AmazonECS_FullAccess
+ - S3_S3FullAccess (It is better to limit "Resource:")
  - AWSPriceListServiceFullAccess 
  - CloudWatchLogsFullAccess
  - CloudWatchReadOnlyAccess
+
+※S3 への Read/Write 権限は限定できるなら絞った方がより良いです。
 
 ### 3. AWS でロールを作成します。
 
@@ -119,6 +120,8 @@ ecsub の実行のデモは以下 URL で見ることができます。
  - AmazonEC2ContainerServiceforEC2Role
  - S3_S3FullAccess
  - CloudWatchMetricFullAccess（create yourself. Choose "CloudWatch:\*Metric\*"）
+
+※S3 への Read/Write 権限は限定できるなら絞った方がより良いです。
 
 作成したロールの「信頼関係」を編集し、サービスに `"ecs-tasks.amazonaws.com", "ec2.amazonaws.com"` を登録します。
 

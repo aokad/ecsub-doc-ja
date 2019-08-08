@@ -24,7 +24,7 @@ sublinks:
 ecsub は Amazon Elastic Container Serve (Amazon ECS) を利用したバッチジョブ実行エンジンです。  
 バッチジョブ実行の流れを以下の図に沿って解説します。  
 
-![](./assets/images/ecsub-flow.png)
+[![](./assets/images/ecsub-flow.png)](./assets/images/ecsub-flow.png)
 
  1. ecsub は指定されたファイルやオプションからタスク実行パラメータファイルを作成し、AWS S3 バケットにアップロードします。
  2. Amazon ECS にクラスタを作成し、コンテナインスタンス (EC2 インスタンス) を起動します。
@@ -55,7 +55,9 @@ ecsub には以下のサブコマンドがあります。
 
 ここではタスクの投入を行う `aws submit` について解説します。
 
-## ecsub submit コマンドの解説
+```Bash
+ecsub submit --help
+```
 
 ### 必須オプション
 
@@ -84,7 +86,7 @@ ecsub には以下のサブコマンドがあります。
 
 (*2) ロケーション（リージョン）をまたいでデータのやり取りを行うと別途料金が発生しますので、チェック機能があります。
 
-起動するAWS EC2 インスタンスに関する設定
+**起動するAWS EC2 インスタンスに関する設定**
 
 |オプション名          | デフォルト                                    | 説明                              |
 |:---------------------|:----------------------------------------------|:----------------------------------|
@@ -112,11 +114,11 @@ ecsub には以下のサブコマンドがあります。
 実行スクリプトで使用したい変数をタスクファイルで設定しています。
 1 行が 1 つのジョブです。
 
-![](./assets/images/tasks1.png)
+[![](./assets/images/tasks1.PNG)](./assets/images/tasks1.PNG)
 
 タスクファイルに 3 行あれば、3 つのジョブが実行されます。
 
-![](./assets/images/tasks2.png)
+[![](./assets/images/tasks2.PNG)](./assets/images/tasks2.PNG)
 
 ### 記述ルール
 
@@ -146,17 +148,17 @@ ecsub には以下のサブコマンドがあります。
 
 環境変数が複数ある場合は、別名で設定することができます。
 
-![](./assets/images/tasks3.png)
+[![](./assets/images/tasks3.PNG)](./assets/images/tasks3.PNG)
 
 ### スクリプトに直接記入してもいい？
 
 実際はコンテナにコピーした後、実際のスクリプトには内部のパスを渡しています。  
 そのため、スクリプトに直接 S3 のパスを入力してもインスタンスにコピーされずうまく動きません。
 
-![](./assets/images/tasks4.png)
+[![](./assets/images/tasks4.PNG)](./assets/images/tasks4.PNG)
 
-※ ツールによってはコピーせず直接 S3 のパスを入力にできるものもあります。コピー不要であれば、`--env` に設定してください。
-
+※ ツールによってはファイルをコピーせず直接 S3 のパスを入力できるものもあります。  
+   コピー不要であれば、`--input` ではなく `--env` に設定してください。
 
 ## バッチジョブを実行する
 
@@ -174,7 +176,7 @@ git clone https://github.com/aokad/wordcount.git
 
 解析したいデータを S3 にアップロードします。
 
-![](./assets/images/input-bucket.png)
+[![](./assets/images/input-bucket.png)](./assets/images/input-bucket.png)
 
 今回はダウンロードしたディレクトリのうち、 `data` ディレクトリをすべて s3 にアップロードしてください。
 
@@ -237,15 +239,15 @@ ecsub submit \
 タスクが成功すると exit_code 0 で終了します。  
 実行中に以下のようなメッセージが表示されると、そのタスクは成功です。  
 
-![](./assets/images/success.png)
+[![](./assets/images/success.png)](./assets/images/success.png)
 
 失敗したときはエラーが表示されます。  
 
-![](./assets/images/failure.png)
+[![](./assets/images/failure.png)](./assets/images/failure.png)
 
 全てのタスクが成功すれば "ecsub completed successfully!" と表示されます。
 
-![](./assets/images/success2.png)
+[![](./assets/images/success2.png)](./assets/images/success2.png)
 
 うまくいかない場合は…  
 --> [エラーかな？と思ったら](./trouble-shooting)
@@ -255,21 +257,44 @@ ecsub submit \
 実行中に以下のようなメッセージが表示されます。  
 これはタスクごとの実行ログです。
 
-![](./assets/images/log.png)
+[![](./assets/images/log.png)](./assets/images/log.png)
 
-記載されているアドレスをwebブラウザで開くとログが表示されます。
-
+記載されているアドレスをwebブラウザで開くとログが表示されます。  
 「すべて」でログの最後に移動できます。
 
-![](./assets/images/cloudwatch-log-1.PNG)
+[![](./assets/images/cloudwatch-log-1.PNG)](./assets/images/cloudwatch-log-1.PNG)
 
 [【参考】ログのダウンロードと AWS からの削除](./features#%E3%82%B8%E3%83%A7%E3%83%96%E3%81%AE%E5%AE%9F%E8%A1%8C%E3%83%AD%E3%82%B0%E3%82%92%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%99%E3%82%8B)
 
 ### 7. タスクのコスト
 
+タスク実行中に以下のログが表示されます。
 
-![](./assets/images/cost.png)
+[![](./assets/images/cost.png)](./assets/images/cost.png)
 
+これはタスクのコストを示しています。  
+
+注意1：小数点 3 桁までの表示ですので、実際の料金とは差異があります。  
+注意2：通信やその他サービス使用料は計算に含めていませんので、実際とは異なることがあります。
+
+1行目：  
+  `The cost of this job is $0.002.`
+
+今回のタスクは $0.002 であったことを示しています。  
+`+` で始まる行は内訳です。
+
+2行目：  
+  `+ instance-1: $0.002, instance-type t2.micro (ondemand) $0.015 (if spot: $0.000), running-time 0.109 Hour`
+
+2行目はインスタンス料金です。 $0.002 がインスタンス料金で、そのあと単価が続きます。 
+() の中はもし、スポットインスタンスであれば、という比較用の料金です。  
+今回は $0.000 と表示されていますが、小数点 3 桁までの表示ですので、無料というわけではありません。
+
+3行目：  
+  `+ volume-1: $0.001, attached 31 (GiB), $0.120 per GB-month of General Purpose SSD (gp2), running-time 0.109 Hour`
+
+3行目はアタッチしたボリュームの料金です。 $0.001 が料金で、そのあと単価が続きます。 
+ディスクサイズには `disk` オプションで指定した 1GiB とは別にバックエンドのディスク 30 GiB を含んでいます。
 
 ### 8. タスクのレポートを見る
 
