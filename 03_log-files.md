@@ -4,18 +4,17 @@ title: Log files
 permalink: ./logs
 page_index: 3
 sublinks:
-  - title: ログディレクトリ
-    link: ログディレクトリ
   - title: メトリクス
     link: メトリクス
   - title: タスク実行ログ
     link: タスク実行ログ
   - title: レポート
     link: レポート
-
+  - title: ログディレクトリ
+    link: ログディレクトリ
 ---
 
-# ecsub のディレクトリ
+# ecsub の実行結果
 
 ecsub は `--wdir` で指定されるディレクトリに中間ファイルやログを出力します。
 
@@ -54,45 +53,24 @@ tasks-wordcount-QQppj/ (タスク名)
 |metrics       | タスクごとのメトリクスです。([後述](#メトリクス))|
 |script        | タスクごとのインスタンスに渡すスクリプトです。S3 にもコピーされています。|
 
-## ログディレクトリ
-
- - $R: リトライ数 (今のところ、0固定)
- - $N: タスク No. (0補填3桁、タスクファイルの記入順に等しい)
-
-| ファイル名                             | 説明                                                    |
-|:---------------------------------------|:--------------------------------------------------------|
-| create-cluster.$R.log                  | Amazon ECS Cluster 作成                                 |
-| create-key-pair.$R.log                 | AWS EC2 key-pair 作成                                   |
-| create-tags.$N.$R.log                  | AWS EC2 インスタンスにタグ設定                          |
-| delete-cluster.$R.log                  | Amazon ECS Cluster 削除                                 |
-| delete-key-pair.$R.log                 | AWS EC2 key-pair 作成                                   |
-| deregister-task-definition.$R.log      | Amazon ECS task 定義削除                                |
-| describe-container-instances.$N.$R.log | Amazon ECS コンテナインスタンス情報取得                 |
-| describe-tasks.$N.$R.log               | **Amazon ECS タスク情報取得** (*1)                      |
-| register-task-definition.$R.log        | Amazon ECS task 定義作成                                |
-| run-instances.$N.$R.log                | AWS EC2 インスタンス作成                                |
-| start-task.$N.$R.log                   | Amazon ECS タスク投入                                   |
-| summary.$N.log                         | **サマリ** (*1)                                         |
-| terminate-instances.$R.log             | AWS EC2 インスタンス削除<br>（全体終了時に念のため実行）|
-| terminate-instances.$N.$R.log          | AWS EC2 インスタンス削除                                |
-
-(*1): 実行時間、コスト、終了コードなど[レポート](#レポート)で出力している情報の元になっているファイルです。
-
 ## メトリクス
 
-メトリクスはコンテナインスタンス起動中、1 分に 1 回 AWS CloudWatch メトリクスに収集されています。  
-しかし、一定時間経過後削除されてしまいますので、ecsub はタスク終了時にダウンロードしています。
-
+コンテナインスタンス起動中、1 分に 1 回 AWS CloudWatch メトリクスに収集されています。  
 メトリクスはタスクごとに 3 種類の情報を取得しています。
 
- - $N: タスク No. (タスクファイルの記入順に等しい)
+ - CPUUtilization:  CPU 使用率 (%)
+ - DataStorageUtilization:  データストレージ 使用率 (%) 
+ - MemoryUtilization:  メモリ 使用率 (%)
 
-| ファイル名                    | 説明                        |
-|:------------------------------|:----------------------------|
-| $N-CPUUtilization.txt         | CPU 使用率 (%)              |
-| $N-DataStorageUtilization.txt | データストレージ 使用率 (%) |
-| $N-MemoryUtilization.txt      | メモリ 使用率 (%)           |
+以下の手順でアクセスします。
 
+1. AWS コンソールにログインし、CloudWatch サービスに移動
+1. メトリクス → ECSUB → ClusterName, InstanceId の順に移動
+1. 表示したいメトリクスを選択
+
+[![](./assets/images/metrics.PNG)](./assets/images/metrics.PNG)
+
+ecsub はタスク終了時に `metrics` ディレクトリにダウンロードしています。
 
 ```
 $ head tasks-wordcount/metrics/0-DataStorageUtilization.txt
@@ -102,15 +80,13 @@ Index   Timestamp               Maximum Unit
 2       2019/08/08 04:51:00     1       Percent
 ```
 
-### AWS コンソールから直接参照する場合
+| ファイル名                        | 説明                        |
+|:----------------------------------|:----------------------------|
+| $N-CPUUtilization.txt        (*1) | CPU 使用率 (%)              |
+| $N-DataStorageUtilization.txt(*1) | データストレージ 使用率 (%) |
+| $N-MemoryUtilization.txt     (*1) | メモリ 使用率 (%)           |
 
-以下の手順でアクセスします。
-
-1. AWS コンソールにログインし、cloudwatch サービスに移動
-1. メトリクス → ECSUB → ClusterName, InstanceId の順に移動
-1. 表示したいメトリクスを選択
-
-[![](./assets/images/metrics.PNG)](./assets/images/metrics.PNG)
+(*1): $N: タスク No. (タスクファイルの記入順に等しい)
 
 ## タスク実行ログ
 
@@ -135,47 +111,72 @@ Index   Timestamp               Maximum Unit
 
 オプション
 
- - **wdir**: ecsub の作業ディレクトリです。デフォルトでは "./" です。
- - **prefix**: タスク名 (前方一致)
- - **rm**: 指定するとAWSから削除します 
- - **dw**: 指定するとダウンロードします
+ - `--wdir /tmp/ecsub`: ecsub 作業ディレクトリ (デフォルトは `./`)
+ - `--prefix task-name`: タスク名 (前方一致)
+ - `--rm`: 指定するとAWSから削除
+ - `--dw`: 指定するとダウンロード
 
 
-ダウンロードする
+タスク実行ログのダウンロード実行例
 
 ```Bash
-ecsub logs --wdir /tmp/ecsub --prefix tasks-wordcount-QQppj --dw
+$ ecsub logs --prefix tasks_wordcount_error-1LT6A --dw
+2019-08-09 16:18:50.822430 [ecsub-logs] === download log files start ===
+2019-08-09 16:18:50.822821 [ecsub-logs] boto3.client('logs').describe_log_groups(logGroupNamePrefix = 'ecsub-tasks_wordcount_error-1LT6A', limit = 1)
+2019-08-09 16:18:51.062504 [ecsub-logs] log-groups: 1
+2019-08-09 16:18:51.063853 [ecsub-logs] cluser-name: tasks_wordcount_error-1LT6A
+2019-08-09 16:18:51.064760 [ecsub-logs] boto3.client('logs').describe_log_streams(logGroupName = 'ecsub-tasks_wordcount_error-1LT6A', logStreamNamePrefix = 'ecsub', limit = 1)
+2019-08-09 16:18:51.159522 [ecsub-logs] log-streams: 1
+2019-08-09 16:18:51.163389 [ecsub-logs] boto3.client('logs').get_log_events(logGroupName = 'ecsub-tasks_wordcount_error-1LT6A', logStreamName = 'ecsub/tasks_wordcount_error-1LT6A_task/6dfbf64b-e9e0-424c-9f0d-ca7675083069', startFromHead = True)
+2019-08-09 16:18:51.324321 [ecsub-logs] log-events: 276
+2019-08-09 16:18:51.479258 [ecsub-logs] === download log files end ===
 ```
 
-削除する
+ダウンロードしたログは --wdir で指定した ecsub 作業ディレクトリ中タスク名のディレクトリの下に `cloud_watch` というディレクトリ名で保存されています。
 
-```Bash
-ecsub logs --wdir /tmp/ecsub --prefix tasks-wordcount-QQppj --rm
+```diff
+tasks_wordcount_error-1LT6A/
++ ├── cloud_watch
++ │   └── tasks_wordcount_error-1LT6A_task-20190809_150931.log
+  ├── conf
+  ├── log
+  ├── metrics
+  └── script
 ```
 
-ダウンロードし、AWS からは削除する
+ダウンロードし、AWS からは削除する場合
 
 ```Bash
-ecsub logs --wdir /tmp/ecsub --prefix tasks-wordcount-QQppj --dw --rm
+ecsub logs --wdir /tmp/ecsub --prefix tasks_wordcount-ncy8O --dw --rm
 ```
 
-task-wordcount から始まるタスクすべてダウンロード
+削除する場合（ダウンロードしない）
 
 ```Bash
-ecsub logs --wdir /tmp/ecsub --prefix tasks-wordcount --dw
+ecsub logs --wdir /tmp/ecsub --prefix tasks_wordcount-ncy8O --rm
+```
+
+`--prefix` オプションは前方一致のため、"task_wordcount から始まるタスクすべてダウンロード"、ということもできます。
+
+```Bash
+ecsub logs --wdir /tmp/ecsub --prefix tasks_wordcount --dw
 ```
 
 ## レポート
 
-以下のコマンドで各タスクの実行結果を見ることができます。
+`ecsub report` コマンドで各タスクの実行結果を見ることができます。
+
+オプション
+
+ - `--wdir /tmp/ecsub`:  ecsub 作業ディレクトリ (デフォルトは `./`)
+ - `-f`, `--failed`:  失敗したタスクのみ表示する
+ - `-b [YYYYMMDDhhmm]`, `--begin [YYYYMMDDhhmm]`: これ以降の開始時刻でフィルタリング
+ - `-e [YYYYMMDDhhmm]`, `--end [YYYYMMDDhhmm]`: これ以前の終了時刻でフィルタリング
+ - `--max 20`:  最大表示件数
+ - `--sortby sort_key` 指定した項目でソート
 
 ```Bash
-ecsub report
-```
-
-レポートが表示されます。
-
-```
+$ ecsub report
 | exit_code|                    taskname|  no| spot|         task_startAt|           task_endAt| instance_type|  cpu| memory| disk_size|   price|    instance_createAt|      instance_stopAt|                                                  log_local|
 |         0|       tasks_wordcount-ncy8O| 000|    F| 2019/08/09 14:34:03 | 2019/08/09 14:38:38 |      t2.micro| 1024|    900|        31| 0.00155| 2019/08/09 14:34:03 | 2019/08/09 14:38:38 |       ./tasks_wordcount-ncy8O/log/describe-tasks.000.0.log|
 |         0|       tasks_wordcount-ncy8O| 001|    F| 2019/08/09 14:34:08 | 2019/08/09 14:38:43 |      t2.micro| 1024|    900|        31| 0.00156| 2019/08/09 14:34:08 | 2019/08/09 14:38:43 |       ./tasks_wordcount-ncy8O/log/describe-tasks.001.0.log|
@@ -207,3 +208,27 @@ ecsub report
 ```
 インスタンスの単価＊起動時間＋ディスクの単価＊サイズ＊アタッチしたインスタンスの起動時間
 ```
+
+## ログディレクトリ
+
+ - $R: リトライ数 (今のところ、0固定)
+ - $N: タスク No. (0補填3桁、タスクファイルの記入順に等しい)
+
+| ファイル名                             | 説明                                                    |
+|:---------------------------------------|:--------------------------------------------------------|
+| create-cluster.$R.log                  | Amazon ECS Cluster 作成                                 |
+| create-key-pair.$R.log                 | AWS EC2 key-pair 作成                                   |
+| create-tags.$N.$R.log                  | AWS EC2 インスタンスにタグ設定                          |
+| delete-cluster.$R.log                  | Amazon ECS Cluster 削除                                 |
+| delete-key-pair.$R.log                 | AWS EC2 key-pair 作成                                   |
+| deregister-task-definition.$R.log      | Amazon ECS task 定義削除                                |
+| describe-container-instances.$N.$R.log | Amazon ECS コンテナインスタンス情報取得                 |
+| describe-tasks.$N.$R.log               | **Amazon ECS タスク情報取得** (*1)                      |
+| register-task-definition.$R.log        | Amazon ECS task 定義作成                                |
+| run-instances.$N.$R.log                | AWS EC2 インスタンス作成                                |
+| start-task.$N.$R.log                   | Amazon ECS タスク投入                                   |
+| summary.$N.log                         | **サマリ** (*1)                                         |
+| terminate-instances.$R.log             | AWS EC2 インスタンス削除<br>（全体終了時に念のため実行）|
+| terminate-instances.$N.$R.log          | AWS EC2 インスタンス削除                                |
+
+(*1): 実行時間、コスト、終了コードなど[レポート](#レポート)で出力している情報の元になっているファイルです。

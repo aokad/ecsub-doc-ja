@@ -51,19 +51,24 @@ ecsub submit \
 
 ## ゾンビタスクを削除
 
-ecsub は最後まで実行すればコンテナインスタンスを削除して終了しますが、ターミナルとの接続が途中で切れた、など予期せぬ場合、インスタンスを削除できないことがあります。  
+ecsub は最後まで実行すればコンテナインスタンスを削除して終了しますが、ターミナルとの接続が途中で切れるなど予期せぬ場合、インスタンスを削除できないことがあります。  
 そのままではインスタンス料金が課金されてしまいますので、インスタンスを削除します。  
 AWS コンソールから削除することもできますが、`ecsub delete` コマンドで削除することもできます。
 
 オプション
 
  - 【必須】タスク名
- - **wdir**: ecsub の作業ディレクトリです。デフォルトは `./` です。
+ - `--wdir /tmp/ecsub`: ecsub の作業ディレクトリ (デフォルトは `./`)
 
-使用例
+実行例
 
 ```Bash
-ecsub delete --wdir /tmp/ecsub sample2-bRnfG
+$ ecsub delete tasks_wordcount_error-OeAWk
+2019-08-09 15:22:00.595790 [tasks_wordcount_error-OeAWk] + aws ec2 terminate-instances --instance-ids i-0ff303fb1977967e5
+2019-08-09 15:22:02.333706 [tasks_wordcount_error-OeAWk] + aws ec2 wait instance-terminated --instance-ids i-0ff303fb1977967e5
+2019-08-09 15:22:04.164741 [tasks_wordcount_error-OeAWk] + aws ecs delete-cluster --cluster arn:aws:ecs:ap-northeast-1:047717877309:cluster/tasks_wordcount_error-OeAWk
+2019-08-09 15:22:05.927468 [tasks_wordcount_error-OeAWk] + aws ecs deregister-task-definition --task-definition arn:aws:ecs:ap-northeast-1:047717877309:task-definition/tasks_wordcount_error-OeAWk:1
+2019-08-09 15:22:07.508680 [tasks_wordcount_error-OeAWk] + aws ec2 delete-key-pair --key-name tasks_wordcount_error-OeAWk
 ```
 
 ## タスクファイルの暗号化
