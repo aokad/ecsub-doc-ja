@@ -57,32 +57,36 @@ aws configure
 ### 4. インストールの確認
 
 動作確認のために簡単なジョブを実行してみます。  
-まず、実行スクリプトと、タスクファイルをダウンロードします。
+まず、簡単な実行スクリプトと、タスクファイルをダウンロードします。
 
 ```Bash
-mkdir ecsub-example
-wget https://aokad.github.io/ecsub-doc-ja/assets/examples/run-hello.sh -P ecsub-example/
-wget https://aokad.github.io/ecsub-doc-ja/assets/examples/tasks-hello.tsv -P ecsub-example/
+mkdir ecsub_hello
+cd ecsub_hello
+wget https://aokad.github.io/ecsub-doc-ja/assets/tiny/run_hello.sh
+wget https://aokad.github.io/ecsub-doc-ja/assets/tiny/tasks_hello.tsv
 ```
 
-次に AWS S3 にバケットを作成します。  
-ecsub の作業ディレクトリです。
+次に ecsub の作業用に AWS S3 バケットを作成します。  
+任意の名前を付けることができますが、AWS 全アカウントでユニークである必要があるため、あまり安易な名前は既に使用されている可能性があります。  
+
+[バケット命名規則](https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/dev/BucketRestrictions.html)
 
 ```Bash
-aws s3 mb s3://${yourbucket}
+export YOUR_BUCKET=${任意のバケット名}
+aws s3 mb s3://${YOUR_BUCKET}
 ```
 
 ジョブを実行します。
 
- - **script:**  ダウンロードした `run-hello.sh` ファイルのパスを指定してください
- - **tasks:**  ダウンロードした `tasks-hello-1.tsv` ファイルのパスを指定してください
+ - **script:**  ダウンロードした `run_hello.sh` ファイルのパスを指定してください
+ - **tasks:**  ダウンロードした `tasks_hello.tsv` ファイルのパスを指定してください
  - **aws-s3-bucket:**  作成したバケット名を指定してください
 
 ```Bash
 ecsub submit \
---script ecsub-example/run-hello.sh \
---tasks ecsub-example/tasks-hello.tsv \
---aws-s3-bucket  s3://${yourbucket}/ecsub \
+--script ./run_hello.sh \
+--tasks ./tasks_hello.tsv \
+--aws-s3-bucket  s3://${YOUR_BUCKET}/ecsub \
 --image python:2.7.14 \
 --aws-ec2-instance-type t2.micro \
 --disk-size 1
@@ -106,7 +110,7 @@ ecsub の実行のデモは以下 URL で見ることができます。
 
  - AmazonEC2FullAccess
  - AmazonECS_FullAccess
- - S3_S3FullAccess (It is better to limit "Resource:")
+ - S3_S3FullAccess [^1]
  - AWSPriceListServiceFullAccess 
  - CloudWatchLogsFullAccess
  - CloudWatchReadOnlyAccess
@@ -118,10 +122,10 @@ ecsub の実行のデモは以下 URL で見ることができます。
 以下の権限を付け、"ecsInstanceRole" という名前でロールを作成してください。
 
  - AmazonEC2ContainerServiceforEC2Role
- - S3_S3FullAccess
+ - S3_S3FullAccess [^1]
  - CloudWatchMetricFullAccess（create yourself. Choose "CloudWatch:\*Metric\*"）
 
-※S3 への Read/Write 権限は限定できるなら絞った方がより良いです。
+※ 
 
 作成したロールの「信頼関係」を編集し、サービスに `"ecs-tasks.amazonaws.com", "ec2.amazonaws.com"` を登録します。
 
@@ -145,3 +149,4 @@ ecsub の実行のデモは以下 URL で見ることができます。
 
 作成したユーザを "ecsub-user" グループに所属させます。
 
+ - 1: ここでは解説のため S3FullAccess をつけていますが、与える権限は目的に応じて必要最低限にすることを推奨します。

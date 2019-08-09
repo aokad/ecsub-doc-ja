@@ -20,7 +20,7 @@ Amazon Elastic Compute Cloud (Amazon EC2) にインスタンスを作成して d
 
 ## ジョブを実行する
 
-コマンドラインからスクリプトファイル ([サンプル](./assets/examples/wordcount-file.sh)) とタスク定義ファイル ([サンプル](./assets/examples/wordcount-file.tsv)) を指定して実行します。
+コマンドラインからスクリプトファイル ([サンプル](https://raw.githubusercontent.com/aokad/wordcount/master/run_wordcount.sh)) とタスクファイル ([サンプル](https://raw.githubusercontent.com/aokad/wordcount/master/tasks_wordcount.tsv)) と呼ばれる定義ファイルを指定して実行します。
 
 デモはここから
 

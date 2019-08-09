@@ -1,4 +1,0 @@
---env RANK	--input INPUT_FILE	--output OUTPUT_FILE
-100	s3://{bucket-name}/path/to/hamlet.txt	s3://{bucket-name}/path/to/hamlet-count.txt
-100	s3://{bucket-name}/path/to/kinglear.txt	s3://{bucket-name}/path/to/kinglear-count.txt
-100	s3://{bucket-name}/path/to/othello.txt	s3://{bucket-name}/path/to/othello-count.txt

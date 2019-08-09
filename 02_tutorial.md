@@ -17,18 +17,22 @@ sublinks:
 # ecsub チュートリアル
 
 実際のジョブを実行するまでを解説します。  
-事前に [インストール](./setup#install) を実行し動作確認を済ませておいてください。
+事前に [インストール](./setup#install-and-setup) を実行し動作確認を済ませておいてください。
 
 ## Overview
 
 ecsub は Amazon Elastic Container Serve (Amazon ECS) を利用したバッチジョブ実行エンジンです。  
+投入されたジョブはタスクファイルに記述された行数分のタスクを持ち、タスクの数だけコンテナインスタンスを起動します。  
+
+ --> 参考：[Amazon ECS コンテナインスタンス](https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/ECS_instances.html)
+
 バッチジョブ実行の流れを以下の図に沿って解説します。  
 
-[![](./assets/images/ecsub-flow.png)](./assets/images/ecsub-flow.png)
+[![](./assets/images/ecsub-flow.PNG)](./assets/images/ecsub-flow.PNG)
 
  1. ecsub は指定されたファイルやオプションからタスク実行パラメータファイルを作成し、AWS S3 バケットにアップロードします。
- 2. Amazon ECS にクラスタを作成し、コンテナインスタンス (EC2 インスタンス) を起動します。
- 3. タスクを実行します。
+ 2. Amazon ECS にクラスタを作成し、コンテナインスタンスを起動します。
+ 3. 各タスクを実行します。
     * 3-1. 指定されたコンテナイメージを pull します。
     * 3-2. タスク実行パラメータをダウンロードします。
     * 3-3. 入力ファイルをダウンロードします。
@@ -49,11 +53,11 @@ ecsub には以下のサブコマンドがあります。
 
  - **submit**: ジョブを投入します。ジョブの終了を待ちます。
  - **away**: submit と同じくジョブを投入しますが、ジョブの終了を待ちません。（上級者向け）
- - **report**: ジョブの結果を表示します。
+ - **report**: タスクの結果を表示します。
  - **delete**: ジョブを削除します。
- - **logs**: ジョブの実行ログをダウンロードします。
+ - **logs**: タスクの実行ログをダウンロードします。
 
-ここではタスクの投入を行う `aws submit` について解説します。
+ここではジョブの投入を行う `aws submit` について解説します。
 
 ```Bash
 ecsub submit --help
@@ -69,7 +73,7 @@ ecsub submit --help
 |aws-ec2-instance-type      | t2.micro           | 起動したいインスタンスタイプ (*1)                           |
 |aws-ec2-instance-type-list | t3.micro,t2.micro  | 起動したいインスタンスタイプ (スポットインスタンス用) (*1)  |
 
-(*1) どちらか一つを必ず指定してください
+(*1): どちらか一つを必ず指定してください
 
 ### 任意のオプション
 
@@ -79,12 +83,12 @@ ecsub submit --help
 |image           | python:2.7.14                        | コンテナインスタンスのイメージ                                          |
 |use_amazon_ecr  | False                                | Amazon ECR を使用するか                                                 |
 |task-name       | タスクファイル名 + "-" + 任意の5文字 | 作業用ディレクトリやコンソール出力、インスタンス名などに使用する        |
-|processes       | 20                                   | 同時実行するジョブの最大数                                              |
+|processes       | 20                                   | 同時実行するタスクの最大数                                              |
 |spot            | False                                | スポットインスタンスで起動するか                                        |
 |retry-od        | False                                | スポットインスタンスで失敗した場合、オンデマンドインスタンスでやり直すか|
 |ignore-location | False                                | ロケーションの違いを無視するか (*2)                                     |
 
-(*2) ロケーション（リージョン）をまたいでデータのやり取りを行うと別途料金が発生しますので、チェック機能があります。
+(*2): ロケーション（リージョン）をまたいでデータのやり取りを行うと別途料金が発生しますので、チェック機能があります。
 
 **起動するAWS EC2 インスタンスに関する設定**
 
@@ -104,7 +108,7 @@ ecsub submit --help
 |dind                 | False                | Docker in Dockerとして実行するか                  |
 |request-payer-bucket | (None)               | リクエスタ払いのバケットがあれば "," 区切りで記載 |
 |shell                | /bin/bash            | コンテナイメージ上のシェルのパス                  |
-|setup-container-cmd  | "pip install awscli" | コンテナイメージジョブ実行前に行う設定コマンド    |
+|setup-container-cmd  | "pip install awscli" | コンテナイメージ設定コマンド                      |
 
 ## タスクファイルの解説
 
@@ -112,11 +116,11 @@ ecsub submit --help
 以下の図を見てください。
 
 実行スクリプトで使用したい変数をタスクファイルで設定しています。
-1 行が 1 つのジョブです。
+1 行が 1 つのタスクです。
 
 [![](./assets/images/tasks1.PNG)](./assets/images/tasks1.PNG)
 
-タスクファイルに 3 行あれば、3 つのジョブが実行されます。
+タスクファイルに 3 行あれば、3 つのタスクが実行されます。
 
 [![](./assets/images/tasks2.PNG)](./assets/images/tasks2.PNG)
 
@@ -129,20 +133,20 @@ ecsub submit --help
  - コメントは `#` で始めて、ヘッダの前に記載
  - ファイル名称、拡張子は任意
 
-コンテナにコピーするもの
+S3 バケットからコンテナインスタンスにダウンロードするもの
 
  - `--input [NAME]`  s3 ファイルのパス, 指定ファイルのみコピー
  - `--input-recursive [NAME]` s3 ディレクトリのパス, 再帰的にコピー
 
-コンテナから外に出すもの
+コンテナインスタンスからS3 バケットにアップロードするもの
 
  - `--output [NAME]` s3 ファイルのパス, 指定ファイルのみコピー
  - `--output-recursive [NAME]` s3 ディレクトリのパス, 再帰的にコピー
 
-環境変数のセット
+環境変数
 
  - `--env [NAME]` 環境変数
- - `--secret-env [NAME]` 暗号化した環境変数 (後述)
+ - `--secret-env [NAME]` 暗号化した環境変数 ([後述](./features#%E3%82%BF%E3%82%B9%E3%82%AF%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E6%9A%97%E5%8F%B7%E5%8C%96))
 
 ### 環境変数が複数ある場合
 
@@ -152,12 +156,12 @@ ecsub submit --help
 
 ### スクリプトに直接記入してもいい？
 
-実際はコンテナにコピーした後、実際のスクリプトには内部のパスを渡しています。  
-そのため、スクリプトに直接 S3 のパスを入力してもインスタンスにコピーされずうまく動きません。
+実際はコンテナインスタンスにダウンロードした後、実際のスクリプトにはコンテナインスタンス内部のパスを渡しています。  
+そのため、スクリプトに直接 S3 のパスを入力してもインスタンスからはアクセスすることができずうまく動きません。
 
 [![](./assets/images/tasks4.PNG)](./assets/images/tasks4.PNG)
 
-※ ツールによってはファイルをコピーせず直接 S3 のパスを入力できるものもあります。  
+※ ツールによっては直接 S3 のパスを入力できるものもあります。  
    コピー不要であれば、`--input` ではなく `--env` に設定してください。
 
 ## バッチジョブを実行する
@@ -176,19 +180,19 @@ git clone https://github.com/aokad/wordcount.git
 
 解析したいデータを S3 にアップロードします。
 
-[![](./assets/images/input-bucket.png)](./assets/images/input-bucket.png)
+[![](./assets/images/input-bucket.PNG)](./assets/images/input-bucket.PNG)
 
 今回はダウンロードしたディレクトリのうち、 `data` ディレクトリをすべて s3 にアップロードしてください。
 
-コピーの例
+アップロードの例
 
 ```Bash
-aws s3 cp --recursive ./wordcount/data s3://YOUR-BUCKET/wordcount/data
+aws s3 cp --recursive ./wordcount/data s3://${YOUR_BUCKET}/data
 ```
 
 ### 3. タスクファイルの編集
 
-./wordcount/tasks-wordcount-file.tsv をテキストエディタで開いてください。
+./wordcount/tasks_wordcount.tsv をテキストエディタで開いてください。
 
 ```
 --input INPUT_FILE      --output OUTPUT_FILE    --env RANK
@@ -203,11 +207,11 @@ s3://{bucket-name}/data/titles/othello.txt      s3://{bucket-name}/output/othell
 
 ```Bash
 # 正しい場合、情報が表示される
-$ aws s3 ls s3://YOUR-BUCKET/wordcount/data/titles/hamlet.txt
+$ aws s3 ls s3://${YOUR_BUCKET}/data/titles/hamlet.txt
 2019-08-07 18:23:05     162851 hamlet.txt
 
 # 間違っている場合、何も表示されない
-$ aws s3 ls s3://YOUR-BUCKET/data/titles/hamlet.txt
+$ aws s3 ls s3://${YOUR_BUCKET}/error-path/hamlet.txt
 $
 ```
 
@@ -224,13 +228,12 @@ $
 
 以下コマンドで実行します。  
 `tasks` は編集したタスクファイルを使用してください。  
-`aws-s3-bucket` は実在するバケットのパスを指定してください。
 
 ```diff
 ecsub submit \
-+ --tasks ./wordcount/tasks-wordcount-file.tsv \
-+ --aws-s3-bucket  s3://YOUR-BUCKET/ecsub-test \
-  --script ./wordcount/wordcount-file.sh \
++ --tasks ./wordcount/tasks_wordcount.tsv \
+  --aws-s3-bucket  s3://${YOUR_BUCKET}/ecsub-test \
+  --script ./wordcount/run_wordcount.sh \
   --image aokad/wordcount \
   --aws-ec2-instance-type t2.micro \
   --disk-size 1
@@ -239,15 +242,15 @@ ecsub submit \
 タスクが成功すると exit_code 0 で終了します。  
 実行中に以下のようなメッセージが表示されると、そのタスクは成功です。  
 
-[![](./assets/images/success.png)](./assets/images/success.png)
+[![](./assets/images/success.PNG)](./assets/images/success.PNG)
 
 失敗したときはエラーが表示されます。  
 
-[![](./assets/images/failure.png)](./assets/images/failure.png)
+[![](./assets/images/failure.PNG)](./assets/images/failure.PNG)
 
 全てのタスクが成功すれば "ecsub completed successfully!" と表示されます。
 
-[![](./assets/images/success2.png)](./assets/images/success2.png)
+[![](./assets/images/success2.PNG)](./assets/images/success2.PNG)
 
 うまくいかない場合は…  
 --> [エラーかな？と思ったら](./trouble-shooting)
@@ -257,20 +260,20 @@ ecsub submit \
 実行中に以下のようなメッセージが表示されます。  
 これはタスクごとの実行ログです。
 
-[![](./assets/images/log.png)](./assets/images/log.png)
+[![](./assets/images/log-link.PNG)](./assets/images/log-link.PNG)
 
 記載されているアドレスをwebブラウザで開くとログが表示されます。  
 「すべて」でログの最後に移動できます。
 
 [![](./assets/images/cloudwatch-log-1.PNG)](./assets/images/cloudwatch-log-1.PNG)
 
-[【参考】ログのダウンロードと AWS からの削除](./features#%E3%82%B8%E3%83%A7%E3%83%96%E3%81%AE%E5%AE%9F%E8%A1%8C%E3%83%AD%E3%82%B0%E3%82%92%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%99%E3%82%8B)
+--> 参考：[タスク実行ログ](./features#タスク実行ログ)
 
 ### 7. タスクのコスト
 
 タスク実行中に以下のログが表示されます。
 
-[![](./assets/images/cost.png)](./assets/images/cost.png)
+[![](./assets/images/cost.PNG)](./assets/images/cost.PNG)
 
 これはタスクのコストを示しています。  
 
@@ -278,7 +281,7 @@ ecsub submit \
 注意2：通信やその他サービス使用料は計算に含めていませんので、実際とは異なることがあります。
 
 1行目：  
-  `The cost of this job is $0.002.`
+  `The cost of this task is $0.002.`
 
 今回のタスクは $0.002 であったことを示しています。  
 `+` で始まる行は内訳です。
@@ -298,7 +301,7 @@ ecsub submit \
 
 ### 8. タスクのレポートを見る
 
-以下のコマンドでジョブの実行結果を見ることができます。
+以下のコマンドでタスクごとの実行結果を見ることができます。
 
 ```Bash
 ecsub report
@@ -307,15 +310,15 @@ ecsub report
 レポートが表示されます。
 
 ```
-| exit_code|                   taskname|  no| spot|          job_startAt|            job_endAt| instance_type|  cpu| memory| disk_size|   price|    instance_createAt|      instance_stopAt|                                                 log_local|
-|         0| tasks-wordcount-file-QQppj| 000|    F| 2019/08/08 13:06:46 | 2019/08/08 13:11:49 |      t2.micro| 1024|    900|         1| 0.00171| 2019/08/08 13:06:46 | 2019/08/08 13:11:49 | ./tasks-wordcount-file-QQppj/log/describe-tasks.000.0.log|
-|         0| tasks-wordcount-file-QQppj| 001|    F| 2019/08/08 13:06:51 | 2019/08/08 13:11:44 |      t2.micro| 1024|    900|         1| 0.00166| 2019/08/08 13:06:51 | 2019/08/08 13:11:44 | ./tasks-wordcount-file-QQppj/log/describe-tasks.001.0.log|
-|         0| tasks-wordcount-file-QQppj| 002|    F| 2019/08/08 13:06:56 | 2019/08/08 13:11:57 |      t2.micro| 1024|    900|         1| 0.00170| 2019/08/08 13:06:56 | 2019/08/08 13:11:57 | ./tasks-wordcount-file-QQppj/log/describe-tasks.002.0.log|
+| exit_code|              taskname|  no| spot|         task_startAt|           task_endAt| instance_type|  cpu| memory| disk_size|   price|    instance_createAt|      instance_stopAt|                                            log_local|
+|         0| tasks-wordcount-QQppj| 000|    F| 2019/08/08 13:06:46 | 2019/08/08 13:11:49 |      t2.micro| 1024|    900|         1| 0.00171| 2019/08/08 13:06:46 | 2019/08/08 13:11:49 | ./tasks-wordcount-QQppj/log/describe-tasks.000.0.log|
+|         0| tasks-wordcount-QQppj| 001|    F| 2019/08/08 13:06:51 | 2019/08/08 13:11:44 |      t2.micro| 1024|    900|         1| 0.00166| 2019/08/08 13:06:51 | 2019/08/08 13:11:44 | ./tasks-wordcount-QQppj/log/describe-tasks.001.0.log|
+|         0| tasks-wordcount-QQppj| 002|    F| 2019/08/08 13:06:56 | 2019/08/08 13:11:57 |      t2.micro| 1024|    900|         1| 0.00170| 2019/08/08 13:06:56 | 2019/08/08 13:11:57 | ./tasks-wordcount-QQppj/log/describe-tasks.002.0.log|
 ```
 
-成功したジョブは exit_code が 0 になっています。
+成功したタスクは exit_code が 0 になっています。
 
-詳細はこちらを参照ください。
+各項目について、詳細はこちらを参照ください。
 
 --> [レポート](./logs#%E3%83%AC%E3%83%9D%E3%83%BC%E3%83%88)
 
@@ -329,21 +332,25 @@ ecsub report
 ```
 wordcount/
 ├── data
-│   └── hamlet <---------------- 入力データのディレクトリ
+│   └── hamlet <------------------- 今回の入力データのディレクトリ
 │      ├── hamlet_act1_scene1.txt
 │      ├── hamlet_act1_scene2.txt
 │      │     ...
 │      └── hamlet_act5_scene2.txt
 │
-├── tasks-wordcount-dir.tsv <---- ディレクトリ入力のタスクファイル
-├── tasks-wordcount-file.tsv
-├── wordcount-dir.sh <----------- ディレクトリ入力のスクリプト
-└── wordcount-file.sh
+├── example
+│   └── tasks_wordcount_dir.tsv <-- ディレクトリ入力のタスクファイル
+│   └── run_wordcount_dir.sh <----- ディレクトリ入力のスクリプト
+├── python/
+│
+├── Dockerfile
+├── tasks_wordcount.tsv
+├── README.md
+└── run_wordcount.sh
 ```
 
 手順：
 
-1. 入力データをディレクトリごと S3 にアップロードします。
 1. S3 のパスに合わせてタスクファイルを編集します。
 1. 編集したタスクファイルを使用して `ecsub submit` を実行します。
 
@@ -351,7 +358,7 @@ wordcount/
 ecsub submit \
 + --tasks ??? \
 + --script ??? \
-+ --aws-s3-bucket  s3://YOUR-BUCKET/ecsub-test \
+  --aws-s3-bucket  s3://${YOUR-BUCKET}/ecsub-test \
   --image aokad/wordcount \
   --aws-ec2-instance-type t2.micro \
   --disk-size 1
