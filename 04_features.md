@@ -24,18 +24,10 @@ sublinks:
 
 ## ジョブキャンセル
 
-ecsub 実行中のコンソールで Ctrl-C を入力してください。  
+ecsub 実行中のコンソールで `Ctrl-C` を入力してください。  
 その後以下のような終了処理が走りますので、**【重要】そのままお待ちください**。
 
-```
-KeyboardInterrupt
-2018-12-18 16:19:49.683496 [tasks-wordcount-nk2Vs] + aws ec2 terminate-instances --instance-ids i-067e2dfc2a7d3809b i-01bfa1f3a4d17ac63
-2018-12-18 16:19:54.675539 [tasks-wordcount-nk2Vs] + aws ec2 wait instance-terminated --instance-ids i-067e2dfc2a7d3809b i-01bfa1f3a4d17ac63
-2018-12-18 16:20:45.795659 [tasks-wordcount-nk2Vs] + aws ec2 cancel-spot-instance-requests --spot-instance-request-ids sir-e5piabrh sir-2mvrbq6j sir-bnggbv4h
-2018-12-18 16:20:51.735453 [tasks-wordcount-nk2Vs] + aws ecs delete-cluster --cluster arn:aws:ecs:ap-northeast-1:047717877309:cluster/tasks-wordcount-nk2Vs
-2018-12-18 16:20:57.028853 [tasks-wordcount-nk2Vs] + aws ecs deregister-task-definition --task-definition arn:aws:ecs:ap-northeast-1:047717877309:task-definition/tasks-wordcount-nk2Vs:1
-2018-12-18 16:21:02.446327 [tasks-wordcount-nk2Vs] + aws ec2 delete-key-pair --key-name tasks-wordcount-nk2Vs
-```
+[![](./assets/images/ctrl-c.PNG)](./assets/images/ctrl-c.PNG)
 
 ## スポットインスタンスを使用
 

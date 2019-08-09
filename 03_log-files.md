@@ -176,15 +176,16 @@ ecsub report
 レポートが表示されます。
 
 ```
-| exit_code|              taskname|  no| spot|        task_startAt|            task_endAt| instance_type|  cpu| memory| disk_size|   price|    instance_createAt|      instance_stopAt|                                            log_local|
-|         0| tasks-wordcount-QQppj| 000|    F| 2019/08/08 13:06:46 | 2019/08/08 13:11:49 |      t2.micro| 1024|    900|         1| 0.00171| 2019/08/08 13:06:46 | 2019/08/08 13:11:49 | ./tasks-wordcount-QQppj/log/describe-tasks.000.0.log|
-|         0| tasks-wordcount-QQppj| 001|    F| 2019/08/08 13:06:51 | 2019/08/08 13:11:44 |      t2.micro| 1024|    900|         1| 0.00166| 2019/08/08 13:06:51 | 2019/08/08 13:11:44 | ./tasks-wordcount-QQppj/log/describe-tasks.001.0.log|
-|         0| tasks-wordcount-QQppj| 002|    F| 2019/08/08 13:06:56 | 2019/08/08 13:11:57 |      t2.micro| 1024|    900|         1| 0.00170| 2019/08/08 13:06:56 | 2019/08/08 13:11:57 | ./tasks-wordcount-QQppj/log/describe-tasks.002.0.log|
+| exit_code|                    taskname|  no| spot|         task_startAt|           task_endAt| instance_type|  cpu| memory| disk_size|   price|    instance_createAt|      instance_stopAt|                                                  log_local|
+|         0|       tasks_wordcount-ncy8O| 000|    F| 2019/08/09 14:34:03 | 2019/08/09 14:38:38 |      t2.micro| 1024|    900|        31| 0.00155| 2019/08/09 14:34:03 | 2019/08/09 14:38:38 |       ./tasks_wordcount-ncy8O/log/describe-tasks.000.0.log|
+|         0|       tasks_wordcount-ncy8O| 001|    F| 2019/08/09 14:34:08 | 2019/08/09 14:38:43 |      t2.micro| 1024|    900|        31| 0.00156| 2019/08/09 14:34:08 | 2019/08/09 14:38:43 |       ./tasks_wordcount-ncy8O/log/describe-tasks.001.0.log|
+|         0|       tasks_wordcount-ncy8O| 002|    F| 2019/08/09 14:34:13 | 2019/08/09 14:38:04 |      t2.micro| 1024|    900|        31| 0.00130| 2019/08/09 14:34:13 | 2019/08/09 14:38:04 |       ./tasks_wordcount-ncy8O/log/describe-tasks.002.0.log|
+|         2| tasks_wordcount_error-1LT6A| 000|    F| 2019/08/09 15:06:25 | 2019/08/09 15:11:32 |      t2.micro| 1024|    900|        31| 0.00173| 2019/08/09 15:06:25 | 2019/08/09 15:11:32 | ./tasks_wordcount_error-1LT6A/log/describe-tasks.000.0.log|
 ```
 
 各項目
 
- - **exit_code**: 終了コード。 "0" であれば成功です。
+ - **exit_code**: 終了コード。 `0` であれば成功
  - **taskname**: タスク名
  - **no**: タスク番号 (タスクファイルの行番号に等しい)
  - **spot**: スポットインスタンスかどうか

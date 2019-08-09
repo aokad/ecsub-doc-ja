@@ -24,7 +24,7 @@ Amazon Elastic Compute Cloud (Amazon EC2) にインスタンスを作成して d
 
 デモはここから
 
-<a href="https://asciinema.org/a/xEAxjBe5CjyOck9PGBNtAfNbr"><img src="https://asciinema.org/a/xEAxjBe5CjyOck9PGBNtAfNbr.png" width="600"/></a>
+<a href="https://asciinema.org/a/cpxOiNghJchavKXBMSZjrfE2D"><img src="https://asciinema.org/a/cpxOiNghJchavKXBMSZjrfE2D.png" width="600"/></a>
 
 --> [ジョブを実行する](./tutorial#%E3%83%90%E3%83%83%E3%83%81%E3%82%B8%E3%83%A7%E3%83%96%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B)
 

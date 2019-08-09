@@ -146,7 +146,7 @@ S3 バケットからコンテナインスタンスにダウンロードする�
 環境変数
 
  - `--env [NAME]` 環境変数
- - `--secret-env [NAME]` 暗号化した環境変数 ([後述](./features#%E3%82%BF%E3%82%B9%E3%82%AF%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E6%9A%97%E5%8F%B7%E5%8C%96))
+ - `--secret-env [NAME]` 暗号化した環境変数 ([後述](./features#タスクファイルの暗号化))
 
 ### 環境変数が複数ある場合
 
@@ -187,12 +187,13 @@ git clone https://github.com/aokad/wordcount.git
 アップロードの例
 
 ```Bash
+export YOUR_BUCKET=${任意のバケット名}
 aws s3 cp --recursive ./wordcount/data s3://${YOUR_BUCKET}/data
 ```
 
 ### 3. タスクファイルの編集
 
-./wordcount/tasks_wordcount.tsv をテキストエディタで開いてください。
+`./wordcount/tasks_wordcount.tsv` をテキストエディタで開いてください。
 
 ```
 --input INPUT_FILE      --output OUTPUT_FILE    --env RANK
@@ -219,7 +220,7 @@ $
 
 今回は作成済みですので割愛します。  
 
-【参考】今回使用する docker image
+--> 参考：今回使用する docker image
 
  - [dockerhub](https://cloud.docker.com/u/aokad/repository/docker/aokad/wordcount)
  - [Dockerfile](https://raw.githubusercontent.com/aokad/wordcount/master/Dockerfile)
@@ -239,14 +240,14 @@ ecsub submit \
   --disk-size 1
 ```
 
-タスクが成功すると exit_code 0 で終了します。  
+タスクが成功すると `exit_code 0` で終了します。  
 実行中に以下のようなメッセージが表示されると、そのタスクは成功です。  
 
 [![](./assets/images/success.PNG)](./assets/images/success.PNG)
 
 失敗したときはエラーが表示されます。  
 
-[![](./assets/images/failure.PNG)](./assets/images/failure.PNG)
+[![](./assets/images/fail.PNG)](./assets/images/fail.PNG)
 
 全てのタスクが成功すれば "ecsub completed successfully!" と表示されます。
 
@@ -310,22 +311,22 @@ ecsub report
 レポートが表示されます。
 
 ```
-| exit_code|              taskname|  no| spot|         task_startAt|           task_endAt| instance_type|  cpu| memory| disk_size|   price|    instance_createAt|      instance_stopAt|                                            log_local|
-|         0| tasks-wordcount-QQppj| 000|    F| 2019/08/08 13:06:46 | 2019/08/08 13:11:49 |      t2.micro| 1024|    900|         1| 0.00171| 2019/08/08 13:06:46 | 2019/08/08 13:11:49 | ./tasks-wordcount-QQppj/log/describe-tasks.000.0.log|
-|         0| tasks-wordcount-QQppj| 001|    F| 2019/08/08 13:06:51 | 2019/08/08 13:11:44 |      t2.micro| 1024|    900|         1| 0.00166| 2019/08/08 13:06:51 | 2019/08/08 13:11:44 | ./tasks-wordcount-QQppj/log/describe-tasks.001.0.log|
-|         0| tasks-wordcount-QQppj| 002|    F| 2019/08/08 13:06:56 | 2019/08/08 13:11:57 |      t2.micro| 1024|    900|         1| 0.00170| 2019/08/08 13:06:56 | 2019/08/08 13:11:57 | ./tasks-wordcount-QQppj/log/describe-tasks.002.0.log|
+| exit_code|                    taskname|  no| spot|         task_startAt|           task_endAt| instance_type|  cpu| memory| disk_size|   price|    instance_createAt|      instance_stopAt|                                                  log_local|
+|         0|       tasks_wordcount-ncy8O| 000|    F| 2019/08/09 14:34:03 | 2019/08/09 14:38:38 |      t2.micro| 1024|    900|        31| 0.00155| 2019/08/09 14:34:03 | 2019/08/09 14:38:38 |       ./tasks_wordcount-ncy8O/log/describe-tasks.000.0.log|
+|         0|       tasks_wordcount-ncy8O| 001|    F| 2019/08/09 14:34:08 | 2019/08/09 14:38:43 |      t2.micro| 1024|    900|        31| 0.00156| 2019/08/09 14:34:08 | 2019/08/09 14:38:43 |       ./tasks_wordcount-ncy8O/log/describe-tasks.001.0.log|
+|         0|       tasks_wordcount-ncy8O| 002|    F| 2019/08/09 14:34:13 | 2019/08/09 14:38:04 |      t2.micro| 1024|    900|        31| 0.00130| 2019/08/09 14:34:13 | 2019/08/09 14:38:04 |       ./tasks_wordcount-ncy8O/log/describe-tasks.002.0.log|
+|         2| tasks_wordcount_error-1LT6A| 000|    F| 2019/08/09 15:06:25 | 2019/08/09 15:11:32 |      t2.micro| 1024|    900|        31| 0.00173| 2019/08/09 15:06:25 | 2019/08/09 15:11:32 | ./tasks_wordcount_error-1LT6A/log/describe-tasks.000.0.log|
 ```
 
-成功したタスクは exit_code が 0 になっています。
+成功したタスクは `exit_code` が `0` になっています。
 
 各項目について、詳細はこちらを参照ください。
 
---> [レポート](./logs#%E3%83%AC%E3%83%9D%E3%83%BC%E3%83%88)
+--> [レポート](./logs#レポート)
 
 ### 9. ディレクトリを入力にしたサンプル
 
-ここまでうまくいきましたか？  
-最後にファイル入力 (--input) ではなく、ディレクトリ入力 (--input-recursive) のサンプルを実行して終了とします。
+最後にファイル入力 (--input) ではなく、ディレクトリ入力 (--input-recursive) のサンプルを実行してチュートリアルは終了とします。
 
 スクリプトとタスクファイルはダウンロードした `wordcount` ディレクトリにあります。
 
@@ -363,4 +364,7 @@ ecsub submit \
   --aws-ec2-instance-type t2.micro \
   --disk-size 1
 ```
+
+--> [ログファイルの解説](./logs)  
+--> [そのほかの機能](./features)
 

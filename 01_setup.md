@@ -69,7 +69,7 @@ wget https://aokad.github.io/ecsub-doc-ja/assets/tiny/tasks_hello.tsv
 次に ecsub の作業用に AWS S3 バケットを作成します。  
 任意の名前を付けることができますが、AWS 全アカウントでユニークである必要があるため、あまり安易な名前は既に使用されている可能性があります。  
 
-[バケット命名規則](https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/dev/BucketRestrictions.html)
+--> 参考：[バケット命名規則](https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/dev/BucketRestrictions.html)
 
 ```Bash
 export YOUR_BUCKET=${任意のバケット名}
@@ -95,10 +95,7 @@ ecsub submit \
 実行できましたか？  
 "ecsub completed successfully!" と表示されていれば成功です。
 
-ecsub の実行のデモは以下 URL で見ることができます。
-
-[ecsub demo](https://asciinema.org/a/xEAxjBe5CjyOck9PGBNtAfNbr)
-
+--> 参考：[ecsub のデモ](https://asciinema.org/a/cpxOiNghJchavKXBMSZjrfE2D)
 
 ## Getting started on AWS
 
@@ -110,22 +107,22 @@ ecsub の実行のデモは以下 URL で見ることができます。
 
  - AmazonEC2FullAccess
  - AmazonECS_FullAccess
- - S3_S3FullAccess [^1]
+ - S3_S3FullAccess (*1)
  - AWSPriceListServiceFullAccess 
  - CloudWatchLogsFullAccess
  - CloudWatchReadOnlyAccess
 
-※S3 への Read/Write 権限は限定できるなら絞った方がより良いです。
+(*1): ここでは解説のため S3FullAccess をつけていますが、与える権限は目的に応じて必要最低限にすることを推奨します。
 
 ### 3. AWS でロールを作成します。
 
 以下の権限を付け、"ecsInstanceRole" という名前でロールを作成してください。
 
  - AmazonEC2ContainerServiceforEC2Role
- - S3_S3FullAccess [^1]
+ - S3_S3FullAccess (*1)
  - CloudWatchMetricFullAccess（create yourself. Choose "CloudWatch:\*Metric\*"）
 
-※ 
+(*1): ここでは解説のため S3FullAccess をつけていますが、与える権限は目的に応じて必要最低限にすることを推奨します。
 
 作成したロールの「信頼関係」を編集し、サービスに `"ecs-tasks.amazonaws.com", "ec2.amazonaws.com"` を登録します。
 
@@ -149,4 +146,3 @@ ecsub の実行のデモは以下 URL で見ることができます。
 
 作成したユーザを "ecsub-user" グループに所属させます。
 
- - 1: ここでは解説のため S3FullAccess をつけていますが、与える権限は目的に応じて必要最低限にすることを推奨します。
