@@ -16,7 +16,7 @@ sublinks:
 
 # ecsub の実行結果
 
-ecsub は `--wdir` で指定されるディレクトリに中間ファイルやログを出力します。
+ecsub は `--wdir` オプションで指定されるディレクトリに中間ファイルやログを出力します。
 
 ```
 tasks-wordcount-QQppj/ (タスク名)
@@ -132,7 +132,7 @@ $ ecsub logs --prefix tasks_wordcount_error-1LT6A --dw
 2019-08-09 16:18:51.479258 [ecsub-logs] === download log files end ===
 ```
 
-ダウンロードしたログは --wdir で指定した ecsub 作業ディレクトリ中タスク名のディレクトリの下に `cloud_watch` というディレクトリ名で保存されています。
+ダウンロードしたログは `--wdir` オプションで指定した ecsub 作業ディレクトリ中タスク名のディレクトリの下に `cloud_watch` というディレクトリ名で保存されています。
 
 ```diff
 tasks_wordcount_error-1LT6A/

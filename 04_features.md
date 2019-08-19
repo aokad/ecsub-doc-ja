@@ -118,13 +118,13 @@ $ ecsub_tools encrypt password      # <--- 秘密にしたい文字列
 AQICA(省略)ZMTlAsFP4w==             # <--- 暗号化された文字列
 ```
 
-2) 作成した文字列をフィールド名 --secret-env をつけて tasks.tsv に記入します。
+2) 作成した文字列をフィールド名 `--secret-env` をつけて `tasks.tsv` に記入します。
 
 ## docker in docker
 
-ecsub submit コマンドにて、 `dind` オプションで docker in docker であることを指示してください。
+ecsub submit コマンドにて、 `--dind` オプションで docker in docker であることを指示してください。
 
 ## リクエスタ払いのバケット
 
-ecsub submit コマンドにて、 `request-payer-bucket` オプションでリクエスタ払いのバケットを指定してください。複数あれば "," 区切りで記載します。
+ecsub submit コマンドにて、 `--request-payer-bucket` オプションでリクエスタ払いのバケットを指定してください。複数あれば "," 区切りで記載します。
 

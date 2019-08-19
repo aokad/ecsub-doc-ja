@@ -29,7 +29,7 @@ FileNotFoundError: [Errno 2] No such file or directory: '/home/user/tasks-wordco
 ```
 
 指定されたファイルが s3 に存在しないか、アクセス権限がありません。  
-チェック範囲はタスクファイルのうち `--input` もしくは `--input-recursive` で指定された値と `aws-s3-bucket` で指定されたバケットです。
+チェック範囲はタスクファイルのうち `--input` オプションもしくは `--input-recursive` オプションで指定された値と `--aws-s3-bucket` オプションで指定されたバケットです。
 
 ### There is no Spot capacity
 
@@ -48,9 +48,9 @@ FileNotFoundError: [Errno 2] No such file or directory: '/home/user/tasks-wordco
 ```
 
 ロケーション（リージョン）をまたいでデータのやり取りを行うと別途料金が発生しますので、チェック機能が存在します。  
-了解したうえで実行する場合は `ignore-location ` オプションをつけて実行してください。
+了解したうえで実行する場合は `--ignore-location ` オプションをつけて実行してください。
 
-チェック範囲はタスクファイル、`aws-s3-bucket` で指定されたバケット、`aws configure` で指定したデフォルトリージョンです。
+チェック範囲はタスクファイル、`--aws-s3-bucket` オプションで指定されたバケット、`aws configure` で指定したデフォルトリージョンです。
 
 ## タスクが失敗する
 
