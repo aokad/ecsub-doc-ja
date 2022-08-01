@@ -42,11 +42,4 @@ Amazon Elastic Compute Cloud (Amazon EC2) にインスタンスを作成して d
 
 [GPLv.3](https://github.com/aokad/ecsub/blob/master/LICENSE)
 
-## コンタクト
-
-ご質問やフィードバックなど，お気軽にご連絡ください。
-genomon.devel@gmail.com
-
-対面形式，skype でのアポイントはこちらで受け付けています。  
-Genomon Office Hour: https://genomon-office.youcanbook.me/
 
